@@ -19,9 +19,8 @@ build
 .next
 out
 
-# Local env files
+# Local env files (本地覆盖配置，不提交)
 *.local
-.env
 .env.local
 .env.*.local
 
