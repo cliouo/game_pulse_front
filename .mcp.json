@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "GamePulse API - API 文档": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "apifox-mcp-server@latest",
+        "--project-id=7759526"
+      ],
+      "env": {
+        "APIFOX_ACCESS_TOKEN": "${APIFOX_ACCESS_TOKEN}"
+      }
+    },
+    "shadcn": {
+      "command": "cmd",
+      "args": ["/c", "npx", "shadcn@latest", "mcp"]
+    }
+  }
+}
