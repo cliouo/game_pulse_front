@@ -1,5 +1,6 @@
 import { ExternalLink, Heart, Users } from "lucide-react"
 
+import Magnet from "@/components/react-bits/Magnet"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -171,29 +172,141 @@ export default function GameCard({
 
   if (layout === "list") {
     return (
+      <Magnet
+        padding={50}
+        magnetStrength={5}
+        wrapperClassName={cn("group w-full", className)}
+        innerClassName="w-full"
+      >
+        <Card
+          className={cn(
+            "flex flex-col gap-4 border-border/60 bg-card/60 p-4 shadow-sm transition group-hover:border-primary/50 group-hover:shadow-[0_0_18px_rgba(34,211,238,0.25)] sm:flex-row"
+          )}
+        >
+          <div className="relative h-24 w-full overflow-hidden rounded-lg border border-border/60 bg-muted/40 sm:w-32">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={displayName}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                暂无封面
+              </div>
+            )}
+            <Badge
+              variant="secondary"
+              className={cn(
+                "absolute left-2 top-2 border border-transparent text-[10px]",
+                statusClass
+              )}
+            >
+              {statusLabel}
+            </Badge>
+            {hasActions ? (
+              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition group-hover:opacity-100">
+                {storeUrl ? (
+                  <Button asChild size="sm" variant="secondary">
+                    <a href={storeUrl} target="_blank" rel="noreferrer">
+                      商店
+                    </a>
+                  </Button>
+                ) : null}
+                {detailUrl ? (
+                  <Button asChild size="sm" variant="outline">
+                    <a href={detailUrl}>详情</a>
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+          <div className="flex-1 space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-foreground">
+                  {displayName}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {developers ? `开发商 ${developers}` : "开发商 --"}
+                  {publishers ? ` · 发行商 ${publishers}` : ""}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-1">{renderPrice()}</div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              {displayType ? (
+                <Badge
+                  variant="outline"
+                  className="border-primary/40 text-[10px]"
+                >
+                  {displayType}
+                </Badge>
+              ) : null}
+              <span>评分 {scoreLabel}</span>
+              <span>关注 {formatCompactNumber(followers)}</span>
+              <span>在线 {formatCompactNumber(currentPlayers)}</span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>评分进度</span>
+                <span>{scoreLabel}</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-muted/50">
+                <div
+                  className={cn("h-full rounded-full", getScoreTone(scoreValue ?? 0))}
+                  style={{ width: `${scoreValue ?? 0}%` }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Heart className="h-3.5 w-3.5 text-rose-400" />
+                {formatCompactNumber(followers)}
+              </span>
+              <span className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5 text-sky-400" />
+                {formatCompactNumber(currentPlayers)}
+              </span>
+            </div>
+          </div>
+        </Card>
+      </Magnet>
+    )
+  }
+
+  return (
+    <Magnet
+      padding={50}
+      magnetStrength={5}
+      wrapperClassName={cn("group w-full h-full", className)}
+      innerClassName="w-full h-full"
+    >
       <Card
         className={cn(
-          "group flex flex-col gap-4 border-border/60 bg-card/60 p-4 shadow-sm transition hover:border-primary/50 hover:shadow-[0_0_18px_rgba(34,211,238,0.25)] sm:flex-row",
-          className
+          "h-full overflow-hidden border-border/60 bg-card/60 shadow-sm transition group-hover:border-primary/50 group-hover:shadow-[0_0_18px_rgba(34,211,238,0.25)]"
         )}
       >
-        <div className="relative h-24 w-full overflow-hidden rounded-lg border border-border/60 bg-muted/40 sm:w-32">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={displayName}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-              暂无封面
-            </div>
-          )}
+        <div className="relative">
+          <div className="aspect-[4/5] w-full overflow-hidden border-b border-border/60 bg-muted/40">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={displayName}
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                暂无封面
+              </div>
+            )}
+          </div>
           <Badge
             variant="secondary"
             className={cn(
-              "absolute left-2 top-2 border border-transparent text-[10px]",
+              "absolute left-3 top-3 border border-transparent text-[10px]",
               statusClass
             )}
           >
@@ -204,6 +317,7 @@ export default function GameCard({
               {storeUrl ? (
                 <Button asChild size="sm" variant="secondary">
                   <a href={storeUrl} target="_blank" rel="noreferrer">
+                    <ExternalLink className="h-4 w-4" />
                     商店
                   </a>
                 </Button>
@@ -216,35 +330,27 @@ export default function GameCard({
             </div>
           ) : null}
         </div>
-        <div className="flex-1 space-y-3">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="space-y-1">
-              <h3 className="text-sm font-semibold text-foreground">
-                {displayName}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {developers ? `开发商 ${developers}` : "开发商 --"}
-                {publishers ? ` · 发行商 ${publishers}` : ""}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-1">{renderPrice()}</div>
+        <CardContent className="space-y-3 p-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-foreground">{displayName}</h3>
+            <p className="text-xs text-muted-foreground">
+              {developers ? `开发商 ${developers}` : "开发商 --"}
+              {publishers ? ` · 发行商 ${publishers}` : ""}
+            </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             {displayType ? (
-              <Badge
-                variant="outline"
-                className="border-primary/40 text-[10px]"
-              >
+              <Badge variant="outline" className="border-primary/40 text-[10px]">
                 {displayType}
               </Badge>
-            ) : null}
-            <span>评分 {scoreLabel}</span>
-            <span>关注 {formatCompactNumber(followers)}</span>
-            <span>在线 {formatCompactNumber(currentPlayers)}</span>
+            ) : (
+              <span className="text-xs text-muted-foreground">类型 --</span>
+            )}
+            {renderPrice()}
           </div>
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>评分进度</span>
+              <span>评分</span>
               <span>{scoreLabel}</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-muted/50">
@@ -254,7 +360,7 @@ export default function GameCard({
               />
             </div>
           </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Heart className="h-3.5 w-3.5 text-rose-400" />
               {formatCompactNumber(followers)}
@@ -264,101 +370,8 @@ export default function GameCard({
               {formatCompactNumber(currentPlayers)}
             </span>
           </div>
-        </div>
+        </CardContent>
       </Card>
-    )
-  }
-
-  return (
-    <Card
-      className={cn(
-        "group overflow-hidden border-border/60 bg-card/60 shadow-sm transition hover:border-primary/50 hover:shadow-[0_0_18px_rgba(34,211,238,0.25)]",
-        className
-      )}
-    >
-      <div className="relative">
-        <div className="aspect-[4/5] w-full overflow-hidden border-b border-border/60 bg-muted/40">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={displayName}
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-              暂无封面
-            </div>
-          )}
-        </div>
-        <Badge
-          variant="secondary"
-          className={cn(
-            "absolute left-3 top-3 border border-transparent text-[10px]",
-            statusClass
-          )}
-        >
-          {statusLabel}
-        </Badge>
-        {hasActions ? (
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition group-hover:opacity-100">
-            {storeUrl ? (
-              <Button asChild size="sm" variant="secondary">
-                <a href={storeUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  商店
-                </a>
-              </Button>
-            ) : null}
-            {detailUrl ? (
-              <Button asChild size="sm" variant="outline">
-                <a href={detailUrl}>详情</a>
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-      <CardContent className="space-y-3 p-4">
-        <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-foreground">{displayName}</h3>
-          <p className="text-xs text-muted-foreground">
-            {developers ? `开发商 ${developers}` : "开发商 --"}
-            {publishers ? ` · 发行商 ${publishers}` : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {displayType ? (
-            <Badge variant="outline" className="border-primary/40 text-[10px]">
-              {displayType}
-            </Badge>
-          ) : (
-            <span className="text-xs text-muted-foreground">类型 --</span>
-          )}
-          {renderPrice()}
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>评分</span>
-            <span>{scoreLabel}</span>
-          </div>
-          <div className="h-1.5 w-full rounded-full bg-muted/50">
-            <div
-              className={cn("h-full rounded-full", getScoreTone(scoreValue ?? 0))}
-              style={{ width: `${scoreValue ?? 0}%` }}
-            />
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Heart className="h-3.5 w-3.5 text-rose-400" />
-            {formatCompactNumber(followers)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5 text-sky-400" />
-            {formatCompactNumber(currentPlayers)}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
+    </Magnet>
   )
 }

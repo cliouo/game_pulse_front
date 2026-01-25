@@ -50,7 +50,20 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			}
-  		}
+  		},
+      animation: {
+        aurora: "aurora 60s linear infinite",
+      },
+      keyframes: {
+        aurora: {
+          "from": {
+            "background-position": "50% 50%, 50% 50%",
+          },
+          "to": {
+            "background-position": "350% 50%, 350% 50%",
+          },
+        },
+      },
   	}
   },
   plugins: [require("tailwindcss-animate")],

@@ -3,6 +3,7 @@ import { format, isValid, parseISO } from "date-fns"
 import { zhCN } from "date-fns/locale"
 
 import RiskPieChart from "@/components/charts/RiskPieChart"
+import { BlurText } from "@/components/ui/blur-text"
 import StatCard from "@/components/common/StatCard"
 import HotGamesPreview from "@/components/dashboard/HotGamesPreview"
 import QuickLinks from "@/components/dashboard/QuickLinks"
@@ -69,7 +70,14 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold">仪表板概览</h1>
+          <h1 className="text-2xl font-bold">
+            <BlurText
+              text="仪表板概览"
+              delay={0.15}
+              animateBy="letters"
+              direction="top"
+            />
+          </h1>
           {dashboardQuery.isLoading ? (
             <Skeleton className="h-4 w-40" />
           ) : (

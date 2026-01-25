@@ -38,6 +38,10 @@ const colorStyles = {
   },
 }
 
+import CountUp from "@/components/ui/count-up"
+
+// ... imports
+
 export default function StatCard({
   title,
   value,
@@ -79,7 +83,16 @@ export default function StatCard({
                 palette.value
               )}
             >
-              {value}
+              {typeof value === "number" ? (
+                <CountUp
+                  to={value}
+                  duration={2}
+                  separator=","
+                  className="bg-inherit text-inherit"
+                />
+              ) : (
+                value
+              )}
             </p>
           </div>
           {icon ? (

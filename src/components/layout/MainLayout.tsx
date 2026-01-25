@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Outlet } from "react-router-dom"
 
+import { PageBackground } from "@/components/common/PageBackground"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import Header from "@/components/layout/Header"
@@ -12,6 +13,7 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <PageBackground />
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed((prev) => !prev)}

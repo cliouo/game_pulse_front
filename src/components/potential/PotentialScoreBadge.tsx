@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import CountUp from "../ui/count-up"
 
 type PotentialScoreBadgeProps = {
   score?: number
@@ -51,7 +52,17 @@ export default function PotentialScoreBadge({
       )}
     >
       <span className={cn("text-3xl font-semibold leading-none", palette.text)}>
-        {value ?? "--"}
+        {typeof value === "number" ? (
+          <CountUp
+            from={0}
+            to={value}
+            separator=","
+            duration={1.5}
+            className="count-up-text"
+          />
+        ) : (
+          "--"
+        )}
       </span>
       <span className="mt-1 text-[10px] text-muted-foreground">潜力评分</span>
     </div>
