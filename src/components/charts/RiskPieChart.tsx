@@ -1,5 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
-import type { PieLabelRenderProps, TooltipProps } from "recharts"
+import type { PieLabelRenderProps } from "recharts"
 
 import { cn } from "@/lib/utils"
 
@@ -46,14 +46,14 @@ export default function RiskPieChart({
     outerRadius,
     percent,
   }: PieLabelRenderProps) => {
-    if (!percent || percent <= 0) {
+    if (!percent || percent <= 0 || midAngle === undefined) {
       return null
     }
     const inner = Number(innerRadius)
     const outer = Number(outerRadius)
     const radius = inner + (outer - inner) * 0.5
-    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-    const y = cy + radius * Math.sin(-midAngle * RADIAN)
+    const x = Number(cx) + radius * Math.cos(-midAngle * RADIAN)
+    const y = Number(cy) + radius * Math.sin(-midAngle * RADIAN)
     return (
       <text
         x={x}
@@ -68,7 +68,7 @@ export default function RiskPieChart({
     )
   }
 
-  const tooltipContent = ({ active, payload }: TooltipProps<number, string>) => {
+  const tooltipContent = ({ active, payload }: { active?: boolean; payload?: ReadonlyArray<{ payload: RiskDatum }> }) => {
     if (!active || !payload || payload.length === 0) {
       return null
     }

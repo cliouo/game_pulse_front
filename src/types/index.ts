@@ -195,3 +195,81 @@ export interface PublisherRecommendation {
   related_games?: PotentialGameScore[];
   created_at: string;
 }
+
+// 任务类型
+export type TaskType = 'FETCH_RANKINGS' | 'FETCH_STATS' | 'CLEANUP' | 'SYNC';
+export type TaskStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'SUCCESS'
+  | 'FAILED'
+  | 'CANCELLED';
+export type TaskPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+
+export interface TaskParameters {
+  [key: string]: unknown;
+}
+
+export interface TaskExecution {
+  id: number;
+  task_id: number;
+  status: TaskStatus;
+  started_at: string;
+  completed_at: string;
+  duration: number;
+  error_message?: string;
+  result?: Record<string, unknown>;
+}
+
+export interface Task {
+  id: number;
+  name: string;
+  description: string;
+  type: TaskType;
+  status: TaskStatus;
+  priority: TaskPriority;
+  enabled: boolean;
+  cron_expression: string;
+  timeout: number;
+  max_retries: number;
+  retry_interval: number;
+  concurrency: number;
+  single_run: boolean;
+  parameters: TaskParameters;
+  next_run_at: string;
+  executions?: TaskExecution[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskStats {
+  task_id: number;
+  task_name: string;
+  task_type: string;
+  total_runs: number;
+  success_runs: number;
+  failed_runs: number;
+  success_rate: number;
+  avg_duration: number;
+  last_run_time: string;
+  last_run_status: string;
+}
+
+export interface SchedulerStatus {
+  is_running: boolean;
+  uptime: number;
+  active_tasks: number;
+  pending_tasks: number;
+  completed_tasks: number;
+  failed_tasks: number;
+}
+
+// Admin 查询参数
+export interface AdminTasksQueryParams {
+  page?: number;
+  page_size?: number;
+  type?: string;
+  status?: string;
+  enabled?: boolean;
+  priority?: string;
+}

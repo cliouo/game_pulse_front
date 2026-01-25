@@ -8,6 +8,7 @@ import MarketOpportunities from "@/pages/MarketOpportunities"
 import PotentialGames from "@/pages/PotentialGames"
 import Rankings from "@/pages/Rankings"
 import AdminDashboard from "@/pages/admin/AdminDashboard"
+import TasksPage from "@/pages/admin/TasksPage"
 
 export const routes: RouteObject[] = [
   {
@@ -24,6 +25,9 @@ export const routes: RouteObject[] = [
   {
     path: "/admin",
     element: <AdminLayout />,
-    children: [{ index: true, element: <AdminDashboard /> }],
+    children: [
+      { index: true, element: <AdminDashboard /> },
+      { path: "tasks", element: <TasksPage /> },
+    ],
   },
 ]

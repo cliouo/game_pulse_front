@@ -1,3 +1,88 @@
-const adminApi = {};
+import apiClient from './client';
+import type {
+  AdminTasksQueryParams,
+  ApiResponse,
+  PaginatedResponse,
+  SchedulerStatus,
+  Task,
+  TaskExecution,
+  TaskStats,
+} from '@/types';
+
+const adminApi = {
+  async getTasks(params: AdminTasksQueryParams) {
+    const response = await apiClient.get<PaginatedResponse<Task>>('/admin/tasks', {
+      params,
+    });
+    return response.data;
+  },
+
+  async getTask(id: number) {
+    const response = await apiClient.get<ApiResponse<Task>>(`/admin/tasks/${id}`);
+    return response.data;
+  },
+
+  async createTask(task: Partial<Task>) {
+    const response = await apiClient.post<ApiResponse<Task>>('/admin/tasks', task);
+    return response.data;
+  },
+
+  async updateTask(id: number, task: Partial<Task>) {
+    const response = await apiClient.put<ApiResponse<Task>>(`/admin/tasks/${id}`, task);
+    return response.data;
+  },
+
+  async deleteTask(id: number) {
+    const response = await apiClient.delete<ApiResponse<void>>(`/admin/tasks/${id}`);
+    return response.data;
+  },
+
+  async executeTask(id: number) {
+    const response = await apiClient.post<ApiResponse<void>>(`/admin/tasks/${id}/execute`);
+    return response.data;
+  },
+
+  async cancelTask(id: number) {
+    const response = await apiClient.post<ApiResponse<void>>(`/admin/tasks/${id}/cancel`);
+    return response.data;
+  },
+
+  async getTaskExecutions(id: number) {
+    const response = await apiClient.get<ApiResponse<TaskExecution[]>>(
+      `/admin/tasks/${id}/executions`,
+    );
+    return response.data;
+  },
+
+  async getTaskStats() {
+    const response = await apiClient.get<ApiResponse<TaskStats[]>>('/admin/tasks/stats');
+    return response.data;
+  },
+
+  async getTaskTypes() {
+    const response = await apiClient.get<ApiResponse<string[]>>('/admin/tasks/types');
+    return response.data;
+  },
+
+  async getSchedulerStatus() {
+    const response = await apiClient.get<ApiResponse<SchedulerStatus>>('/admin/scheduler/status');
+    return response.data;
+  },
+
+  async startScheduler() {
+    const response = await apiClient.post<ApiResponse<void>>('/admin/scheduler/start');
+    return response.data;
+  },
+
+  async stopScheduler() {
+    const response = await apiClient.post<ApiResponse<void>>('/admin/scheduler/stop');
+    return response.data;
+  },
+
+  async restartScheduler() {
+    const response = await apiClient.post<ApiResponse<void>>('/admin/scheduler/restart');
+    return response.data;
+  },
+};
 
 export default adminApi;
