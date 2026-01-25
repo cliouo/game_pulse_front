@@ -5,41 +5,6 @@ import { usePotentialGames } from "@/hooks/use-publisher"
 import { cn } from "@/lib/utils"
 
 const placeholderItems = Array.from({ length: 5 })
-const compactFormatter = new Intl.NumberFormat("zh-CN", {
-  notation: "compact",
-  maximumFractionDigits: 1,
-})
-
-const formatCompactNumber = (value?: number) => {
-  if (typeof value !== "number") {
-    return "0"
-  }
-  return compactFormatter.format(value)
-}
-
-const formatScore = (value?: number) => {
-  if (typeof value !== "number") {
-    return "0.0"
-  }
-  return value.toFixed(1)
-}
-
-const formatPrice = (value?: number) => {
-  if (typeof value !== "number") {
-    return "¥0"
-  }
-  if (value === 0) {
-    return "免费"
-  }
-  const fractionDigits = Number.isInteger(value) ? 0 : 2
-  return new Intl.NumberFormat("zh-CN", {
-    style: "currency",
-    currency: "CNY",
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  }).format(value)
-}
-
 type HotGamesPreviewProps = {
   className?: string
 }
@@ -92,12 +57,16 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
             {games.map((game) => (
               <GameCard
                 key={`hot-game-${game.id}`}
-                title={game.name}
-                price={formatPrice(game.price)}
-                rating={formatScore(game.review_score)}
-                followers={formatCompactNumber(game.followers)}
-                genre={game.type}
-                coverUrl={game.header_image}
+                name={game.name}
+                price={game.price}
+                discountPercent={game.discount_percent}
+                reviewScore={game.review_score}
+                followers={game.followers}
+                currentPlayers={game.current_players}
+                type={game.type}
+                headerImage={game.header_image}
+                storeUrl={game.store_url}
+                comingSoon={game.coming_soon}
                 className="w-[200px] shrink-0"
               />
             ))}
