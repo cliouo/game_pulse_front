@@ -17,7 +17,7 @@ export default function MainLayout() {
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed((prev) => !prev)}
-        className="fixed inset-y-0 left-0 hidden lg:flex"
+        className="fixed inset-y-0 left-0 hidden pt-16 lg:flex"
       />
       <Header
         sidebar={collapsed ? "collapsed" : "expanded"}
