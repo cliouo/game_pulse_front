@@ -1,11 +1,8 @@
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
+import { NavLink, Outlet } from "react-router-dom"
 
 import { cn } from "@/lib/utils"
 
 export default function AdminLayout() {
-  const { pathname, hash } = useLocation()
-  const schedulerActive = pathname === "/admin" && hash !== "#stats"
-  const statsActive = pathname === "/admin" && hash === "#stats"
   const navItemBase =
     "flex items-center justify-center rounded-md px-3 py-2 text-xs font-medium transition lg:justify-start"
   const navItemActive = "bg-primary/15 text-primary shadow-sm"
@@ -24,18 +21,27 @@ export default function AdminLayout() {
               GamePulse Admin
             </span>
           </div>
-          <Link
+          <NavLink
             to="/"
             className="text-xs text-muted-foreground transition hover:text-foreground"
           >
             返回主站
-          </Link>
+          </NavLink>
         </div>
       </header>
 
       <div className="flex flex-col lg:flex-row">
         <aside className="border-b border-border/60 bg-card/40 lg:min-h-[calc(100vh-3rem)] lg:w-56 lg:border-b-0 lg:border-r">
           <nav className="flex gap-2 overflow-x-auto px-3 py-2 lg:flex-col lg:gap-1">
+            <NavLink
+              to="/admin"
+              end
+              className={({ isActive }) =>
+                cn(navItemBase, isActive ? navItemActive : navItemIdle)
+              }
+            >
+              概览
+            </NavLink>
             <NavLink
               to="/admin/tasks"
               className={({ isActive }) =>
@@ -44,24 +50,6 @@ export default function AdminLayout() {
             >
               任务管理
             </NavLink>
-            <Link
-              to="/admin#scheduler"
-              className={cn(
-                navItemBase,
-                schedulerActive ? navItemActive : navItemIdle
-              )}
-            >
-              调度器
-            </Link>
-            <Link
-              to="/admin#stats"
-              className={cn(
-                navItemBase,
-                statsActive ? navItemActive : navItemIdle
-              )}
-            >
-              统计
-            </Link>
           </nav>
         </aside>
 

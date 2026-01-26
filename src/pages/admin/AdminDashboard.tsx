@@ -103,11 +103,11 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      <section id="scheduler" className="scroll-mt-20">
+      <section>
         <SchedulerControl />
       </section>
 
-      <section id="stats" className="scroll-mt-20">
+      <section>
         <TaskStats
           stats={stats}
           loading={statsQuery.isLoading}
