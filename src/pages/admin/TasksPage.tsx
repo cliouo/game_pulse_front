@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useAdminTasks, useCancelTask, useDeleteTask, useExecuteTask, useTaskTypes, useUpdateTask } from "@/hooks/use-admin"
-import type { AdminTasksQueryParams, Task, TaskPriority } from "@/types"
+import type { AdminTasksQueryParams, Task, TaskPriority, TaskTypeOption } from "@/types"
 
 const statusOptions = [
   { value: "PENDING", label: "等待中" },
@@ -286,10 +286,19 @@ export default function TasksPage() {
   )
   const pagination = tasksQuery.data?.pagination
 
-  const typeOptions = useMemo(() => {
+  const typeOptions = useMemo<TaskTypeOption[]>(() => {
     const apiTypes = taskTypesQuery.data?.data ?? []
-    const taskTypes = tasks.map((task) => task.type).filter(Boolean)
-    return Array.from(new Set([...apiTypes, ...taskTypes]))
+    const apiTypeValues = new Set(apiTypes.map((t) => t.value))
+    const taskTypes = tasks
+      .map((task) => task.type)
+      .filter((type): type is string => Boolean(type) && !apiTypeValues.has(type))
+    const extraTypes: TaskTypeOption[] = Array.from(new Set(taskTypes)).map((type) => ({
+      value: type,
+      label: type,
+      description: "",
+      parameters: {},
+    }))
+    return [...apiTypes, ...extraTypes]
   }, [taskTypesQuery.data?.data, tasks])
 
   const executeMutation = useExecuteTask()
@@ -377,8 +386,8 @@ export default function TasksPage() {
           <SelectContent>
             <SelectItem value="all">全部类型</SelectItem>
             {typeOptions.map((option) => (
-              <SelectItem key={`type-${option}`} value={option}>
-                {option}
+              <SelectItem key={`type-${option.value}`} value={option.value}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>

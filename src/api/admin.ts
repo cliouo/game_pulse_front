@@ -7,6 +7,7 @@ import type {
   Task,
   TaskExecution,
   TaskStats,
+  TaskTypeOption,
 } from '@/types';
 
 const adminApi = {
@@ -60,7 +61,7 @@ const adminApi = {
   },
 
   async getTaskTypes() {
-    const response = await apiClient.get<ApiResponse<string[]>>('/admin/tasks/types');
+    const response = await apiClient.get<ApiResponse<TaskTypeOption[]>>('/admin/tasks/types');
     return response.data;
   },
 

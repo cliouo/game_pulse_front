@@ -198,6 +198,13 @@ export interface PublisherRecommendation {
 
 // 任务类型
 export type TaskType = 'FETCH_RANKINGS' | 'FETCH_STATS' | 'CLEANUP' | 'SYNC';
+
+export interface TaskTypeOption {
+  value: string;
+  label: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
 export type TaskStatus =
   | 'PENDING'
   | 'RUNNING'
