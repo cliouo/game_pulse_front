@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import Pagination from "@/components/common/Pagination"
 import TaskTable from "@/components/admin/TaskTable"
+import { SchemaForm, validateSchema } from "@/components/schema-form"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,8 +19,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useAdminTasks, useCancelTask, useDeleteTask, useExecuteTask, useTaskTypes, useUpdateTask } from "@/hooks/use-admin"
+import {
+  useAdminTasks,
+  useCancelTask,
+  useCreateTask,
+  useDeleteTask,
+  useExecuteTask,
+  useTaskTypes,
+  useUpdateTask,
+  useValidateTaskParams,
+} from "@/hooks/use-admin"
 import type { AdminTasksQueryParams, Task, TaskPriority, TaskTypeOption } from "@/types"
+import type { ExtendedJSONSchema, UISchema } from "@/types/schema"
 
 const statusOptions = [
   { value: "PENDING", label: "等待中" },
@@ -36,6 +47,9 @@ const priorityOptions: TaskPriority[] = [
   "CRITICAL",
 ]
 
+const emptySchema: ExtendedJSONSchema = { type: "object", properties: {} }
+const emptyUiSchema: UISchema = {}
+
 const buildFormValues = (task?: Task) => ({
   name: task?.name ?? "",
   description: task?.description ?? "",
@@ -49,31 +63,386 @@ const buildFormValues = (task?: Task) => ({
   single_run: task?.single_run ? "true" : "false",
 })
 
+const buildCreateFormValues = () => ({
+  name: "",
+  description: "",
+  cron_expression: "",
+  priority: "NORMAL",
+  enabled: "true",
+})
+
+type TaskValidationResult = {
+  valid: boolean
+  errors: string[]
+}
+
+type ValidationErrorNoticeProps = {
+  errors: string[]
+}
+
+function ValidationErrorNotice({ errors }: ValidationErrorNoticeProps) {
+  if (errors.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+      <div className="font-semibold">参数校验失败</div>
+      <ul className="mt-2 list-disc space-y-1 pl-4">
+        {errors.map((error, index) => (
+          <li key={`validation-error-${index}`}>{error}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+type TaskCreateDialogProps = {
+  open: boolean
+  typeOptions: TaskTypeOption[]
+  saving?: boolean
+  validating?: boolean
+  onOpenChange: (open: boolean) => void
+  onValidate: (
+    taskType: string,
+    parameters: Record<string, unknown>
+  ) => Promise<TaskValidationResult>
+  onCreate: (task: Partial<Task>) => void
+}
+
+function TaskCreateDialog({
+  open,
+  typeOptions,
+  saving = false,
+  validating = false,
+  onOpenChange,
+  onValidate,
+  onCreate,
+}: TaskCreateDialogProps) {
+  const [formValues, setFormValues] = useState(() => buildCreateFormValues())
+  const [selectedType, setSelectedType] = useState("")
+  const [parameters, setParameters] = useState<Record<string, unknown>>({})
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    setFormValues(buildCreateFormValues())
+    setParameters({})
+    setValidationErrors([])
+  }, [open])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    if (!typeOptions.length) {
+      setSelectedType("")
+      return
+    }
+    setSelectedType((prev) =>
+      typeOptions.some((option) => option.value === prev)
+        ? prev
+        : typeOptions[0].value
+    )
+  }, [open, typeOptions])
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    setParameters({})
+    setValidationErrors([])
+  }, [open, selectedType])
+
+  const selectedTypeOption =
+    typeOptions.find((option) => option.value === selectedType) ??
+    (selectedType
+      ? {
+          value: selectedType,
+          label: selectedType,
+          description: "",
+          schema: emptySchema,
+          ui_schema: emptyUiSchema,
+        }
+      : undefined)
+
+  const schema = selectedTypeOption?.schema ?? emptySchema
+  const uiSchema = selectedTypeOption?.ui_schema ?? emptyUiSchema
+  const isWorking = saving || validating
+
+  const handleParametersChange = (nextValue: Record<string, unknown>) => {
+    setParameters(nextValue)
+    if (validationErrors.length) {
+      setValidationErrors([])
+    }
+  }
+
+  const handleCreate = async () => {
+    if (!selectedType) {
+      setValidationErrors(["请选择任务类型"])
+      return
+    }
+    const normalized = validateSchema(schema, parameters)
+    setParameters(normalized.data)
+    try {
+      const validationResult = await onValidate(selectedType, normalized.data)
+      if (!validationResult.valid) {
+        const errors =
+          validationResult.errors && validationResult.errors.length > 0
+            ? validationResult.errors
+            : ["参数校验失败"]
+        setValidationErrors(errors)
+        return
+      }
+      setValidationErrors([])
+    } catch (error) {
+      setValidationErrors(["参数验证失败，请稍后重试"])
+      return
+    }
+
+    const cronExpression = formValues.cron_expression.trim()
+    onCreate({
+      name: formValues.name.trim(),
+      description: formValues.description.trim(),
+      type: selectedType as Task["type"],
+      priority: formValues.priority as TaskPriority,
+      enabled: formValues.enabled === "true",
+      cron_expression: cronExpression ? cronExpression : undefined,
+      parameters: normalized.data,
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>创建任务</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
+              <span>任务类型</span>
+              <Select
+                value={selectedType}
+                onValueChange={setSelectedType}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="选择任务类型" />
+                </SelectTrigger>
+                <SelectContent>
+                  {typeOptions.length > 0 ? (
+                    typeOptions.map((option) => (
+                      <SelectItem key={`create-type-${option.value}`} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__empty" disabled>
+                      暂无可用任务类型
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </label>
+            <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
+              <span>任务名称</span>
+              <Input
+                value={formValues.name}
+                onChange={(event) =>
+                  setFormValues((prev) => ({
+                    ...prev,
+                    name: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
+              <span>任务描述</span>
+              <Input
+                value={formValues.description}
+                onChange={(event) =>
+                  setFormValues((prev) => ({
+                    ...prev,
+                    description: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
+              <span>Cron 表达式</span>
+              <Input
+                value={formValues.cron_expression}
+                onChange={(event) =>
+                  setFormValues((prev) => ({
+                    ...prev,
+                    cron_expression: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className="space-y-1 text-xs text-muted-foreground">
+              <span>优先级</span>
+              <Select
+                value={formValues.priority}
+                onValueChange={(value) =>
+                  setFormValues((prev) => ({
+                    ...prev,
+                    priority: value as TaskPriority,
+                  }))
+                }
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="选择优先级" />
+                </SelectTrigger>
+                <SelectContent>
+                  {priorityOptions.map((option) => (
+                    <SelectItem key={`create-priority-${option}`} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+            <label className="space-y-1 text-xs text-muted-foreground">
+              <span>启用状态</span>
+              <Select
+                value={formValues.enabled}
+                onValueChange={(value) =>
+                  setFormValues((prev) => ({
+                    ...prev,
+                    enabled: value,
+                  }))
+                }
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="选择状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">启用</SelectItem>
+                  <SelectItem value="false">停用</SelectItem>
+                </SelectContent>
+              </Select>
+            </label>
+          </div>
+          <div className="space-y-2">
+            <div className="text-xs font-semibold text-muted-foreground">
+              参数配置
+            </div>
+            <SchemaForm
+              key={selectedType || "task-create-schema"}
+              schema={schema}
+              uiSchema={uiSchema}
+              value={parameters}
+              onChange={handleParametersChange}
+              liveValidate
+              disabled={isWorking || !selectedType}
+              className="rounded-md border border-border/60 bg-muted/10 p-4"
+            />
+          </div>
+          <ValidationErrorNotice errors={validationErrors} />
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isWorking}
+          >
+            取消
+          </Button>
+          <Button onClick={handleCreate} disabled={isWorking || !selectedType}>
+            创建
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 type TaskEditDialogProps = {
   open: boolean
   task?: Task | null
   saving?: boolean
+  validating?: boolean
+  typeOptions: TaskTypeOption[]
   onOpenChange: (open: boolean) => void
-  onSave: (task: Task, values: ReturnType<typeof buildFormValues>) => void
+  onValidate: (
+    taskType: string,
+    parameters: Record<string, unknown>
+  ) => Promise<TaskValidationResult>
+  onSave: (
+    task: Task,
+    values: ReturnType<typeof buildFormValues>,
+    parameters: Record<string, unknown>
+  ) => void
 }
 
 function TaskEditDialog({
   open,
   task,
   saving = false,
+  validating = false,
+  typeOptions,
   onOpenChange,
+  onValidate,
   onSave,
 }: TaskEditDialogProps) {
   const [formValues, setFormValues] = useState(() =>
     buildFormValues(task ?? undefined)
   )
+  const [parameters, setParameters] = useState<Record<string, unknown>>(() => {
+    if (task?.parameters && typeof task.parameters === "object") {
+      return task.parameters as Record<string, unknown>
+    }
+    return {}
+  })
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
 
   if (!task) {
     return null
   }
 
-  const handleSave = () => {
-    onSave(task, formValues)
+  const selectedTypeOption =
+    typeOptions.find((option) => option.value === task.type) ?? {
+      value: task.type,
+      label: task.type,
+      description: "",
+      schema: emptySchema,
+      ui_schema: emptyUiSchema,
+    }
+
+  const schema = selectedTypeOption.schema ?? emptySchema
+  const uiSchema = selectedTypeOption.ui_schema ?? emptyUiSchema
+  const isWorking = saving || validating
+
+  const handleParametersChange = (nextValue: Record<string, unknown>) => {
+    setParameters(nextValue)
+    if (validationErrors.length) {
+      setValidationErrors([])
+    }
+  }
+
+  const handleSave = async () => {
+    const normalized = validateSchema(schema, parameters)
+    setParameters(normalized.data)
+    try {
+      const validationResult = await onValidate(task.type, normalized.data)
+      if (!validationResult.valid) {
+        const errors =
+          validationResult.errors && validationResult.errors.length > 0
+            ? validationResult.errors
+            : ["参数校验失败"]
+        setValidationErrors(errors)
+        return
+      }
+      setValidationErrors([])
+    } catch (error) {
+      setValidationErrors(["参数验证失败，请稍后重试"])
+      return
+    }
+
+    onSave(task, formValues, normalized.data)
   }
 
   return (
@@ -164,6 +533,22 @@ function TaskEditDialog({
               </Select>
             </label>
           </div>
+          <div className="space-y-2">
+            <div className="text-xs font-semibold text-muted-foreground">
+              参数配置
+            </div>
+            <SchemaForm
+              key={task.type}
+              schema={schema}
+              uiSchema={uiSchema}
+              value={parameters}
+              onChange={handleParametersChange}
+              liveValidate
+              disabled={isWorking}
+              className="rounded-md border border-border/60 bg-muted/10 p-4"
+            />
+          </div>
+          <ValidationErrorNotice errors={validationErrors} />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="space-y-1 text-xs text-muted-foreground">
               <span>超时 (秒)</span>
@@ -243,11 +628,11 @@ function TaskEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={saving}
+            disabled={isWorking}
           >
             取消
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={isWorking}>
             保存
           </Button>
         </DialogFooter>
@@ -262,6 +647,7 @@ export default function TasksPage() {
   const [enabledFilter, setEnabledFilter] = useState("all")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [createOpen, setCreateOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editOpen, setEditOpen] = useState(false)
 
@@ -288,7 +674,12 @@ export default function TasksPage() {
 
   const typeOptions = useMemo<TaskTypeOption[]>(() => {
     const apiTypes = taskTypesQuery.data?.data ?? []
-    const apiTypeValues = new Set(apiTypes.map((t) => t.value))
+    const normalizedTypes = apiTypes.map((type) => ({
+      ...type,
+      schema: type.schema ?? emptySchema,
+      ui_schema: type.ui_schema ?? emptyUiSchema,
+    }))
+    const apiTypeValues = new Set(normalizedTypes.map((t) => t.value))
     const taskTypes = tasks
       .map((task) => task.type)
       .filter((type): type is string => Boolean(type) && !apiTypeValues.has(type))
@@ -296,15 +687,18 @@ export default function TasksPage() {
       value: type,
       label: type,
       description: "",
-      parameters: {},
+      schema: emptySchema,
+      ui_schema: emptyUiSchema,
     }))
-    return [...apiTypes, ...extraTypes]
+    return [...normalizedTypes, ...extraTypes]
   }, [taskTypesQuery.data?.data, tasks])
 
   const executeMutation = useExecuteTask()
   const cancelMutation = useCancelTask()
+  const createMutation = useCreateTask()
   const deleteMutation = useDeleteTask()
   const updateMutation = useUpdateTask()
+  const validateMutation = useValidateTaskParams()
 
   const isMutationPending = (taskId: number) => {
     const isNumberMatch = (value: unknown) =>
@@ -335,7 +729,28 @@ export default function TasksPage() {
     }
   }
 
-  const handleSave = (task: Task, values: ReturnType<typeof buildFormValues>) => {
+  const validateTaskParams = async (
+    taskType: string,
+    parameters: Record<string, unknown>
+  ) => {
+    const response = await validateMutation.mutateAsync({
+      taskType,
+      parameters,
+    })
+    return response.data
+  }
+
+  const handleCreate = (payload: Partial<Task>) => {
+    createMutation.mutate(payload, {
+      onSuccess: () => setCreateOpen(false),
+    })
+  }
+
+  const handleSave = (
+    task: Task,
+    values: ReturnType<typeof buildFormValues>,
+    parameters: Record<string, unknown>
+  ) => {
     const toNumber = (value: string, fallback: number) => {
       const parsed = Number(value)
       return Number.isFinite(parsed) ? parsed : fallback
@@ -350,6 +765,7 @@ export default function TasksPage() {
           cron_expression: values.cron_expression.trim() || task.cron_expression,
           priority: values.priority as TaskPriority,
           enabled: values.enabled === "true",
+          parameters,
           timeout: toNumber(values.timeout, task.timeout),
           max_retries: toNumber(values.max_retries, task.max_retries),
           retry_interval: toNumber(values.retry_interval, task.retry_interval),
@@ -365,11 +781,16 @@ export default function TasksPage() {
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">任务管理</h1>
-        <p className="text-sm text-muted-foreground">
-          管理后台任务、调度状态与执行记录
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">任务管理</h1>
+          <p className="text-sm text-muted-foreground">
+            管理后台任务、调度状态与执行记录
+          </p>
+        </div>
+        <Button onClick={() => setCreateOpen(true)} size="sm">
+          创建任务
+        </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -458,12 +879,24 @@ export default function TasksPage() {
         />
       ) : null}
 
+      <TaskCreateDialog
+        open={createOpen}
+        typeOptions={typeOptions}
+        saving={createMutation.isPending}
+        validating={validateMutation.isPending}
+        onOpenChange={setCreateOpen}
+        onValidate={validateTaskParams}
+        onCreate={handleCreate}
+      />
       <TaskEditDialog
         key={editingTask?.id ?? "task-editor"}
         open={editOpen}
         task={editingTask}
         saving={updateMutation.isPending}
+        validating={validateMutation.isPending}
+        typeOptions={typeOptions}
         onOpenChange={handleEditOpenChange}
+        onValidate={validateTaskParams}
         onSave={handleSave}
       />
     </div>

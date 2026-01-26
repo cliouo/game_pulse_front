@@ -1,3 +1,5 @@
+import type { ExtendedJSONSchema, UISchema } from './schema';
+
 export interface ApiResponse<T> {
   code: number;
   message: string;
@@ -203,7 +205,9 @@ export interface TaskTypeOption {
   value: string;
   label: string;
   description: string;
-  parameters: Record<string, unknown>;
+  schema: ExtendedJSONSchema;
+  ui_schema: UISchema;
+  parameters?: Record<string, unknown>;
 }
 export type TaskStatus =
   | 'PENDING'

@@ -65,6 +65,17 @@ const adminApi = {
     return response.data;
   },
 
+  async validateTaskParams(taskType: string, parameters: Record<string, unknown>) {
+    const response = await apiClient.post<ApiResponse<{ valid: boolean; errors: string[] }>>(
+      '/admin/tasks/validate',
+      {
+        task_type: taskType,
+        parameters,
+      },
+    );
+    return response.data;
+  },
+
   async getSchedulerStatus() {
     const response = await apiClient.get<ApiResponse<SchedulerStatus>>('/admin/scheduler/status');
     return response.data;

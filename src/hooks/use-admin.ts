@@ -109,6 +109,18 @@ export function useTaskTypes() {
   });
 }
 
+export function useValidateTaskParams() {
+  return useMutation({
+    mutationFn: ({
+      taskType,
+      parameters,
+    }: {
+      taskType: string;
+      parameters: Record<string, unknown>;
+    }) => adminApi.validateTaskParams(taskType, parameters),
+  });
+}
+
 export function useSchedulerStatus() {
   return useQuery({
     queryKey: adminKeys.scheduler,
