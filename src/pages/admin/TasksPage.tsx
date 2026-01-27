@@ -290,7 +290,7 @@ function TaskCreateDialog({
             <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
               <span>任务类型</span>
               <Select
-                value={selectedType}
+                value={selectedType || undefined}
                 onValueChange={setSelectedType}
               >
                 <SelectTrigger className="h-9">
