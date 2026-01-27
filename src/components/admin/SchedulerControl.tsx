@@ -39,6 +39,23 @@ const formatUptime = (value?: number) => {
   return `${seconds}s`
 }
 
+const formatStartTime = (value?: string) => {
+  if (!value) {
+    return "--"
+  }
+  try {
+    const date = new Date(value)
+    return date.toLocaleString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  } catch {
+    return "--"
+  }
+}
+
 const getStatusTone = (isRunning?: boolean, isLoading?: boolean) => {
   if (isLoading) {
     return {
@@ -68,7 +85,7 @@ export default function SchedulerControl() {
   const restartMutation = useRestartScheduler()
 
   const status = statusQuery.data?.data
-  const statusTone = getStatusTone(status?.is_running, statusQuery.isLoading)
+  const statusTone = getStatusTone(status?.enabled, statusQuery.isLoading)
   const isMutating =
     startMutation.isPending || stopMutation.isPending || restartMutation.isPending
 
@@ -96,7 +113,7 @@ export default function SchedulerControl() {
               variant="outline"
               className="h-7 px-2 text-xs"
               onClick={() => startMutation.mutate()}
-              disabled={statusQuery.isLoading || status?.is_running || isMutating}
+              disabled={statusQuery.isLoading || status?.enabled || isMutating}
             >
               <PlayCircle className="h-3.5 w-3.5" />
               启动
@@ -106,7 +123,7 @@ export default function SchedulerControl() {
               variant="outline"
               className="h-7 px-2 text-xs"
               onClick={() => stopMutation.mutate()}
-              disabled={statusQuery.isLoading || !status?.is_running || isMutating}
+              disabled={statusQuery.isLoading || !status?.enabled || isMutating}
             >
               <PauseCircle className="h-3.5 w-3.5" />
               停止
@@ -116,7 +133,7 @@ export default function SchedulerControl() {
               variant="outline"
               className="h-7 px-2 text-xs"
               onClick={() => restartMutation.mutate()}
-              disabled={statusQuery.isLoading || !status?.is_running || isMutating}
+              disabled={statusQuery.isLoading || !status?.enabled || isMutating}
             >
               <RefreshCcw className="h-3.5 w-3.5" />
               重启
@@ -138,9 +155,9 @@ export default function SchedulerControl() {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
             {statusQuery.isLoading
-              ? Array.from({ length: 5 }).map((_, index) => (
+              ? Array.from({ length: 4 }).map((_, index) => (
                   <Skeleton
                     key={`scheduler-metric-${index}`}
                     className="h-14 w-full"
@@ -155,27 +172,25 @@ export default function SchedulerControl() {
                       </div>
                     </div>
                     <div className="rounded-md border border-border/60 bg-background/60 p-3">
-                      <div className="text-muted-foreground">活跃任务</div>
-                      <div className="mt-1 text-sm font-semibold text-emerald-400">
-                        {formatNumber(status?.active_tasks)}
-                      </div>
-                    </div>
-                    <div className="rounded-md border border-border/60 bg-background/60 p-3">
-                      <div className="text-muted-foreground">等待任务</div>
-                      <div className="mt-1 text-sm font-semibold text-amber-400">
-                        {formatNumber(status?.pending_tasks)}
-                      </div>
-                    </div>
-                    <div className="rounded-md border border-border/60 bg-background/60 p-3">
-                      <div className="text-muted-foreground">已完成</div>
+                      <div className="text-muted-foreground">启动时间</div>
                       <div className="mt-1 text-sm font-semibold">
-                        {formatNumber(status?.completed_tasks)}
+                        {formatStartTime(status?.start_time)}
                       </div>
                     </div>
                     <div className="rounded-md border border-border/60 bg-background/60 p-3">
-                      <div className="text-muted-foreground">失败任务</div>
-                      <div className="mt-1 text-sm font-semibold text-rose-400">
-                        {formatNumber(status?.failed_tasks)}
+                      <div className="text-muted-foreground">注册任务</div>
+                      <div className="mt-1 text-sm font-semibold">
+                        {formatNumber(status?.tasks ? Object.keys(status.tasks).length : 0)}
+                      </div>
+                    </div>
+                    <div className="rounded-md border border-border/60 bg-background/60 p-3">
+                      <div className="text-muted-foreground">启用任务</div>
+                      <div className="mt-1 text-sm font-semibold text-emerald-400">
+                        {formatNumber(
+                          status?.tasks
+                            ? Object.values(status.tasks).filter((t) => t.enabled).length
+                            : 0
+                        )}
                       </div>
                     </div>
                   </>

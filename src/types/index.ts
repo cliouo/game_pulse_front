@@ -267,12 +267,17 @@ export interface TaskStats {
 }
 
 export interface SchedulerStatus {
-  is_running: boolean;
+  enabled: boolean;
   uptime: number;
-  active_tasks: number;
-  pending_tasks: number;
-  completed_tasks: number;
-  failed_tasks: number;
+  start_time?: string;
+  timezone?: string;
+  tasks?: Record<string, {
+    id: number;
+    name: string;
+    cron_expression: string;
+    enabled: boolean;
+    exists: boolean;
+  }>;
 }
 
 // Admin 查询参数
