@@ -4,7 +4,7 @@ import type { ApiResponse, RankingRecord } from '@/types';
 const rankingsApi = {
   async getTopSelling(limit?: number) {
     const params = typeof limit === 'number' ? { limit } : undefined;
-    const response = await apiClient.get<ApiResponse<RankingRecord[]>>('/rankings/top-selling', {
+    const response = await apiClient.get<ApiResponse<RankingRecord[]>>('/steam-rankings/topselling/top', {
       params,
     });
     return response.data;
@@ -12,14 +12,14 @@ const rankingsApi = {
 
   async getTopWishlist(limit?: number) {
     const params = typeof limit === 'number' ? { limit } : undefined;
-    const response = await apiClient.get<ApiResponse<RankingRecord[]>>('/rankings/top-wishlist', {
+    const response = await apiClient.get<ApiResponse<RankingRecord[]>>('/steam-rankings/wishlist/top', {
       params,
     });
     return response.data;
   },
 
   async getRecordTimes() {
-    const response = await apiClient.get<ApiResponse<string[]>>('/rankings/record-times');
+    const response = await apiClient.get<ApiResponse<string[]>>('/steam-rankings/record-times');
     return response.data;
   },
 };
