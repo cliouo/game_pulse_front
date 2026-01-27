@@ -68,6 +68,40 @@ const adminApi = {
     return response.data;
   },
 
+  async getTaskTypeSchema(type: string) {
+    const response = await apiClient.get<ApiResponse<Record<string, unknown>>>(
+      `/admin/tasks/types/${type}/schema`,
+    );
+    return response.data;
+  },
+
+  async updateTaskTypeSchema(type: string, schema: Record<string, unknown>) {
+    const response = await apiClient.put<ApiResponse<Record<string, unknown>>>(
+      `/admin/tasks/types/${type}/schema`,
+      schema,
+    );
+    return response.data;
+  },
+
+  async createTaskTemplate(params: { type: string; [key: string]: unknown }) {
+    const response = await apiClient.post<ApiResponse<Record<string, unknown>>>(
+      '/admin/tasks/templates',
+      params,
+    );
+    return response.data;
+  },
+
+  async runJob(type: string, limit?: number) {
+    const response = await apiClient.post<ApiResponse<Record<string, unknown>>>(
+      '/admin/jobs/run',
+      null,
+      {
+        params: { type, limit },
+      },
+    );
+    return response.data;
+  },
+
   async validateTaskParams(taskType: string, parameters: Record<string, unknown>) {
     const response = await apiClient.post<ApiResponse<{ valid: boolean; errors: string[] }>>(
       '/admin/tasks/validate',
