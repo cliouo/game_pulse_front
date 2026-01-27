@@ -23,6 +23,7 @@ import {
   useAdminTasks,
   useCancelTask,
   useCreateTask,
+  useCreateTaskTemplate,
   useDeleteTask,
   useExecuteTask,
   useTaskTypes,
@@ -119,10 +120,12 @@ function TaskCreateDialog({
   onValidate,
   onCreate,
 }: TaskCreateDialogProps) {
+  const createTemplateMutation = useCreateTaskTemplate()
   const [formValues, setFormValues] = useState(() => buildCreateFormValues())
   const [selectedType, setSelectedType] = useState("")
   const [parameters, setParameters] = useState<Record<string, unknown>>({})
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [templateError, setTemplateError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
@@ -131,6 +134,7 @@ function TaskCreateDialog({
     setFormValues(buildCreateFormValues())
     setParameters({})
     setValidationErrors([])
+    setTemplateError(null)
   }, [open])
 
   useEffect(() => {
@@ -154,6 +158,7 @@ function TaskCreateDialog({
     }
     setParameters({})
     setValidationErrors([])
+    setTemplateError(null)
   }, [open, selectedType])
 
   const selectedTypeOption =
@@ -170,12 +175,70 @@ function TaskCreateDialog({
 
   const schema = selectedTypeOption?.schema ?? emptySchema
   const uiSchema = selectedTypeOption?.ui_schema ?? emptyUiSchema
-  const isWorking = saving || validating
+  const isTemplateLoading = createTemplateMutation.isPending
+  const isWorking = saving || validating || isTemplateLoading
 
   const handleParametersChange = (nextValue: Record<string, unknown>) => {
     setParameters(nextValue)
     if (validationErrors.length) {
       setValidationErrors([])
+    }
+  }
+
+  const handleCreateFromTemplate = async () => {
+    if (!selectedType) {
+      setTemplateError("请选择任务类型")
+      return
+    }
+    setTemplateError(null)
+    try {
+      const response = await createTemplateMutation.mutateAsync({
+        type: selectedType,
+      })
+      const payload =
+        response?.data && typeof response.data === "object"
+          ? (response.data as Record<string, unknown>)
+          : {}
+      const template =
+        payload.task && typeof payload.task === "object" && payload.task !== null
+          ? (payload.task as Record<string, unknown>)
+          : payload
+      const baseValues = buildCreateFormValues()
+      const nextPriority =
+        typeof template.priority === "string" &&
+        priorityOptions.includes(template.priority as TaskPriority)
+          ? template.priority
+          : baseValues.priority
+      const nextEnabled =
+        typeof template.enabled === "boolean"
+          ? template.enabled
+            ? "true"
+            : "false"
+          : template.enabled === "true" || template.enabled === "false"
+            ? template.enabled
+            : baseValues.enabled
+      setFormValues({
+        ...baseValues,
+        name: typeof template.name === "string" ? template.name : baseValues.name,
+        description:
+          typeof template.description === "string"
+            ? template.description
+            : baseValues.description,
+        cron_expression:
+          typeof template.cron_expression === "string"
+            ? template.cron_expression
+            : baseValues.cron_expression,
+        priority: nextPriority,
+        enabled: nextEnabled,
+      })
+      const templateParameters =
+        template.parameters && typeof template.parameters === "object"
+          ? (template.parameters as Record<string, unknown>)
+          : {}
+      setParameters(templateParameters)
+      setValidationErrors([])
+    } catch (error) {
+      setTemplateError("模板加载失败，请稍后重试")
     }
   }
 
@@ -330,17 +393,22 @@ function TaskCreateDialog({
             <div className="text-xs font-semibold text-muted-foreground">
               参数配置
             </div>
-            <SchemaForm
-              key={selectedType || "task-create-schema"}
-              schema={schema}
-              uiSchema={uiSchema}
-              value={parameters}
-              onChange={handleParametersChange}
-              liveValidate
-              disabled={isWorking || !selectedType}
-              className="rounded-md border border-border/60 bg-muted/10 p-4"
-            />
+          <SchemaForm
+            key={selectedType || "task-create-schema"}
+            schema={schema}
+            uiSchema={uiSchema}
+            value={parameters}
+            onChange={handleParametersChange}
+            liveValidate
+            disabled={isWorking || !selectedType}
+            className="rounded-md border border-border/60 bg-muted/10 p-4"
+          />
           </div>
+          {templateError ? (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+              {templateError}
+            </div>
+          ) : null}
           <ValidationErrorNotice errors={validationErrors} />
         </div>
         <DialogFooter>
@@ -350,6 +418,13 @@ function TaskCreateDialog({
             disabled={isWorking}
           >
             取消
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleCreateFromTemplate}
+            disabled={isWorking || !selectedType}
+          >
+            {isTemplateLoading ? "加载模板中..." : "从模板创建"}
           </Button>
           <Button onClick={handleCreate} disabled={isWorking || !selectedType}>
             创建

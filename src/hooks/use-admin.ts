@@ -9,7 +9,9 @@ const adminKeys = {
   executions: (id: number) => ['admin-task-executions', id] as const,
   stats: ['admin-task-stats'] as const,
   types: ['admin-task-types'] as const,
+  typeSchema: (type: string) => ['admin-task-type-schema', type] as const,
   scheduler: ['admin-scheduler-status'] as const,
+  schedulerConfig: ['admin-scheduler-config'] as const,
 };
 
 export function useAdminTasks(params: AdminTasksQueryParams) {
@@ -109,6 +111,33 @@ export function useTaskTypes() {
   });
 }
 
+export function useTaskTypeSchema(type: string) {
+  return useQuery({
+    queryKey: adminKeys.typeSchema(type),
+    queryFn: () => adminApi.getTaskTypeSchema(type),
+    enabled: Boolean(type),
+  });
+}
+
+export function useUpdateTaskTypeSchema() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ type, schema }: { type: string; schema: Record<string, unknown> }) =>
+      adminApi.updateTaskTypeSchema(type, schema),
+    onSuccess: (_, { type }) => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.typeSchema(type) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.types });
+    },
+  });
+}
+
+export function useCreateTaskTemplate() {
+  return useMutation({
+    mutationFn: (params: { type: string; [key: string]: unknown }) =>
+      adminApi.createTaskTemplate(params),
+  });
+}
+
 export function useValidateTaskParams() {
   return useMutation({
     mutationFn: ({
@@ -121,10 +150,29 @@ export function useValidateTaskParams() {
   });
 }
 
+export function useRunJob() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ type, limit }: { type: string; limit?: number }) =>
+      adminApi.runJob(type, limit),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.scheduler });
+      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+    },
+  });
+}
+
 export function useSchedulerStatus() {
   return useQuery({
     queryKey: adminKeys.scheduler,
     queryFn: adminApi.getSchedulerStatus,
+  });
+}
+
+export function useSchedulerConfig() {
+  return useQuery({
+    queryKey: adminKeys.schedulerConfig,
+    queryFn: adminApi.getSchedulerConfig,
   });
 }
 
