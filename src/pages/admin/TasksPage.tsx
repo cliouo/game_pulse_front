@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -282,6 +283,7 @@ function TaskCreateDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>创建任务</DialogTitle>
+          <DialogDescription>配置新任务的基本信息和参数</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -525,6 +527,7 @@ function TaskEditDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>编辑任务</DialogTitle>
+          <DialogDescription>修改任务配置和参数设置</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
