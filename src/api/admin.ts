@@ -39,7 +39,7 @@ const adminApi = {
   },
 
   async executeTask(id: number) {
-    const response = await apiClient.post<ApiResponse<void>>(`/admin/tasks/${id}/execute`);
+    const response = await apiClient.post<ApiResponse<TaskExecution>>(`/admin/tasks/${id}/execute`);
     return response.data;
   },
 
@@ -48,9 +48,12 @@ const adminApi = {
     return response.data;
   },
 
-  async getTaskExecutions(id: number) {
-    const response = await apiClient.get<ApiResponse<TaskExecution[]>>(
+  async getTaskExecutions(id: number, page = 1, pageSize = 20) {
+    const response = await apiClient.get<PaginatedResponse<TaskExecution>>(
       `/admin/tasks/${id}/executions`,
+      {
+        params: { page, page_size: pageSize },
+      }
     );
     return response.data;
   },
@@ -78,6 +81,11 @@ const adminApi = {
 
   async getSchedulerStatus() {
     const response = await apiClient.get<ApiResponse<SchedulerStatus>>('/admin/scheduler/status');
+    return response.data;
+  },
+
+  async getSchedulerConfig() {
+    const response = await apiClient.get<ApiResponse<Record<string, unknown>>>('/admin/scheduler/config');
     return response.data;
   },
 
