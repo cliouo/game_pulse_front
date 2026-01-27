@@ -31,13 +31,14 @@ export default function NumberField({
   disabled,
   className,
 }: NumberFieldProps) {
-  const widget = (uiSchema?.["ui:widget"] ?? schema["x-widget"]) as
+  const widget = (uiSchema?.["ui:widget"] ?? schema?.["x-widget"]) as
     | string
     | undefined
-  const isInteger = schema.type === "integer"
-  const min = typeof schema.minimum === "number" ? schema.minimum : undefined
-  const max = typeof schema.maximum === "number" ? schema.maximum : undefined
-  const step = schema["x-step"] ?? schema.multipleOf ?? (isInteger ? 1 : "any")
+  const isInteger = schema?.type === "integer"
+  const min = typeof schema?.minimum === "number" ? schema.minimum : undefined
+  const max = typeof schema?.maximum === "number" ? schema.maximum : undefined
+  const step =
+    schema?.["x-step"] ?? schema?.multipleOf ?? (isInteger ? 1 : "any")
   const displayValue =
     typeof value === "number" ? String(value) : value == null ? "" : String(value)
 
@@ -45,7 +46,7 @@ export default function NumberField({
     const resolvedValue =
       typeof value === "number"
         ? value
-        : typeof schema.default === "number"
+        : typeof schema?.default === "number"
           ? schema.default
           : typeof min === "number"
             ? min
@@ -63,7 +64,7 @@ export default function NumberField({
     )
   }
 
-  const hasEnum = Array.isArray(schema.enum) && schema.enum.length > 0
+  const hasEnum = Array.isArray(schema?.enum) && schema.enum.length > 0
   if (widget === "select" || hasEnum) {
     if (!hasEnum) {
       return (
@@ -73,7 +74,7 @@ export default function NumberField({
           onChange={(event) =>
             onChange(toNumber(event.target.value, Boolean(isInteger)))
           }
-          placeholder={schema["x-placeholder"]}
+          placeholder={schema?.["x-placeholder"]}
           disabled={disabled}
           min={min}
           max={max}
@@ -102,7 +103,7 @@ export default function NumberField({
       onChange={(event) =>
         onChange(toNumber(event.target.value, Boolean(isInteger)))
       }
-      placeholder={schema["x-placeholder"]}
+      placeholder={schema?.["x-placeholder"]}
       disabled={disabled}
       min={min}
       max={max}

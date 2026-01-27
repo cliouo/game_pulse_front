@@ -94,6 +94,9 @@ devDependencies:
   '@eslint/js':
     specifier: ^9.39.1
     version: 9.39.2
+  '@types/json-schema':
+    specifier: ^7.0.15
+    version: 7.0.15
   '@types/node':
     specifier: ^24.10.1
     version: 24.10.9

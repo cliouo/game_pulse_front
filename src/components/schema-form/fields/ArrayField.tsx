@@ -13,16 +13,16 @@ type ArrayFieldProps = FieldProps & {
 }
 
 const resolveType = (schema: ExtendedJSONSchema) => {
-  if (Array.isArray(schema.type)) {
+  if (Array.isArray(schema?.type)) {
     return schema.type[0]
   }
-  if (schema.type) {
+  if (schema?.type) {
     return schema.type
   }
-  if (schema.properties) {
+  if (schema?.properties) {
     return "object"
   }
-  if (schema.items) {
+  if (schema?.items) {
     return "array"
   }
   return undefined
@@ -58,10 +58,10 @@ const hasDuplicates = (items: unknown[]) => {
 }
 
 const getDefaultItemValue = (schema: ExtendedJSONSchema) => {
-  if (schema.default !== undefined) {
+  if (schema?.default !== undefined) {
     return schema.default
   }
-  if (Array.isArray(schema.enum) && schema.enum.length > 0) {
+  if (Array.isArray(schema?.enum) && schema.enum.length > 0) {
     return schema.enum[0]
   }
   const type = resolveType(schema)
@@ -93,18 +93,18 @@ export default function ArrayField({
 }: ArrayFieldProps) {
   const items = Array.isArray(value) ? value : []
   const itemSchema =
-    schema.items && typeof schema.items === "object"
+    schema?.items && typeof schema.items === "object"
       ? (Array.isArray(schema.items)
           ? schema.items[0]
           : schema.items) as ExtendedJSONSchema
       : undefined
   const itemUiSchema =
     typeof uiSchema?.items === "object" ? (uiSchema.items as UISchema) : undefined
-  const label = schema.title ?? name
-  const helpText = schema["x-help"] ?? schema.description
-  const isDisabled = Boolean(disabled || schema["x-disabled"])
+  const label = schema?.title ?? name
+  const helpText = schema?.["x-help"] ?? schema?.description
+  const isDisabled = Boolean(disabled || schema?.["x-disabled"])
   const uniqueError =
-    schema.uniqueItems && hasDuplicates(items)
+    schema?.uniqueItems && hasDuplicates(items)
       ? "Items must be unique"
       : undefined
   const errorList = [...(errors ?? [])]

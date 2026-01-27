@@ -1,6 +1,17 @@
 import type { JSONSchema7 } from 'json-schema';
 
 export interface ExtendedJSONSchema extends JSONSchema7 {
+  type?: JSONSchema7["type"];
+  properties?: JSONSchema7["properties"];
+  items?: JSONSchema7["items"];
+  enum?: JSONSchema7["enum"];
+  default?: JSONSchema7["default"];
+  minimum?: JSONSchema7["minimum"];
+  maximum?: JSONSchema7["maximum"];
+  multipleOf?: JSONSchema7["multipleOf"];
+  uniqueItems?: JSONSchema7["uniqueItems"];
+  title?: JSONSchema7["title"];
+  description?: JSONSchema7["description"];
   'x-order'?: number;
   'x-group'?: string;
   'x-groups'?: Record<string, GroupConfig>;

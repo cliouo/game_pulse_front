@@ -17,10 +17,10 @@ export default function StringField({
   disabled,
   className,
 }: StringFieldProps) {
-  const widget = (uiSchema?.["ui:widget"] ?? schema["x-widget"]) as
+  const widget = (uiSchema?.["ui:widget"] ?? schema?.["x-widget"]) as
     | string
     | undefined
-  const placeholder = schema["x-placeholder"]
+  const placeholder = schema?.["x-placeholder"]
   const displayValue =
     typeof value === "string" ? value : value == null ? "" : String(value)
 
@@ -37,8 +37,8 @@ export default function StringField({
   }
 
   if (widget === "combobox") {
-    const enumValues = Array.isArray(schema.enum) ? schema.enum : []
-    const labels = schema["x-enumLabels"] ?? []
+    const enumValues = Array.isArray(schema?.enum) ? schema.enum : []
+    const labels = schema?.["x-enumLabels"] ?? []
     const listId = `schema-form-${name}-list`
     return (
       <>
@@ -52,7 +52,7 @@ export default function StringField({
         />
         {enumValues.length ? (
           <datalist id={listId}>
-            {enumValues.map((option, index) => (
+            {enumValues.map((option: unknown, index: number) => (
               <option key={String(option)} value={String(option)}>
                 {labels[index] ?? String(option)}
               </option>
@@ -63,7 +63,7 @@ export default function StringField({
     )
   }
 
-  const hasEnum = Array.isArray(schema.enum) && schema.enum.length > 0
+  const hasEnum = Array.isArray(schema?.enum) && schema.enum.length > 0
   if (widget === "select" || hasEnum) {
     if (!hasEnum) {
       return (

@@ -47,7 +47,7 @@ const priorityOptions: TaskPriority[] = [
   "CRITICAL",
 ]
 
-const emptySchema: ExtendedJSONSchema = { type: "object", properties: {} }
+const emptySchema: ExtendedJSONSchema = { properties: {} }
 const emptyUiSchema: UISchema = {}
 
 const buildFormValues = (task?: Task) => ({
@@ -682,7 +682,10 @@ export default function TasksPage() {
     const apiTypeValues = new Set(normalizedTypes.map((t) => t.value))
     const taskTypes = tasks
       .map((task) => task.type)
-      .filter((type): type is string => Boolean(type) && !apiTypeValues.has(type))
+      .filter(
+        (type): type is Task["type"] =>
+          Boolean(type) && !apiTypeValues.has(type)
+      )
     const extraTypes: TaskTypeOption[] = Array.from(new Set(taskTypes)).map((type) => ({
       value: type,
       label: type,

@@ -19,23 +19,23 @@ export default function SelectField({
   disabled,
   className,
 }: SelectFieldProps) {
-  const enumValues = Array.isArray(schema.enum) ? schema.enum : []
+  const enumValues = Array.isArray(schema?.enum) ? schema.enum : []
   if (!enumValues.length) {
     return null
   }
-  const labels = schema["x-enumLabels"] ?? []
-  const options = enumValues.map((option, index) => ({
+  const labels = schema?.["x-enumLabels"] ?? []
+  const options = enumValues.map((option: unknown, index: number) => ({
     value: String(option),
     label: labels[index] ?? String(option),
     raw: option,
   }))
   const isNumberType =
-    schema.type === "number" ||
-    schema.type === "integer" ||
-    enumValues.every((option) => typeof option === "number")
+    schema?.type === "number" ||
+    schema?.type === "integer" ||
+    enumValues.every((option: unknown) => typeof option === "number")
   const selectValue =
     value === undefined || value === null ? undefined : String(value)
-  const placeholder = schema["x-placeholder"] ?? "请选择"
+  const placeholder = schema?.["x-placeholder"] ?? "请选择"
 
   const handleValueChange = (nextValue: string) => {
     if (nextValue === "") {
@@ -60,7 +60,7 @@ export default function SelectField({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {options.map((option) => (
+        {options.map((option: { value: string; label: string; raw: unknown }) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>

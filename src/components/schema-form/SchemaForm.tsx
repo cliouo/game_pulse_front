@@ -62,7 +62,7 @@ const setValueAtPath = (
 }
 
 const getFieldEntries = (schema: ExtendedJSONSchema, uiSchema?: UISchema) => {
-  const properties = schema.properties ?? {}
+  const properties = schema?.properties ?? {}
   return Object.entries(properties)
     .map(([name, definition], index) => {
       if (!definition || typeof definition !== "object") {
@@ -73,21 +73,22 @@ const getFieldEntries = (schema: ExtendedJSONSchema, uiSchema?: UISchema) => {
         typeof uiSchema?.[name] === "object"
           ? (uiSchema?.[name] as UISchema)
           : undefined
-      return {
+      const fieldEntry: FieldEntry = {
         name,
         schema: fieldSchema,
-        uiSchema: fieldUiSchema,
         index,
+        ...(fieldUiSchema ? { uiSchema: fieldUiSchema } : {}),
       }
+      return fieldEntry
     })
-    .filter((field): field is FieldEntry => Boolean(field))
+    .filter((field): field is FieldEntry => field !== null)
     .sort((a, b) => {
-      const orderA = a.schema["x-order"] ?? Number.MAX_SAFE_INTEGER
-      const orderB = b.schema["x-order"] ?? Number.MAX_SAFE_INTEGER
+      const orderA = a?.schema?.["x-order"] ?? Number.MAX_SAFE_INTEGER
+      const orderB = b?.schema?.["x-order"] ?? Number.MAX_SAFE_INTEGER
       if (orderA !== orderB) {
         return orderA - orderB
       }
-      return a.index - b.index
+      return (a?.index ?? 0) - (b?.index ?? 0)
     })
 }
 
@@ -118,7 +119,7 @@ export default function SchemaForm({
     >()
     const ungrouped: FieldEntry[] = []
     fields.forEach((field, index) => {
-      const groupKey = field.schema["x-group"]
+      const groupKey = field?.schema?.["x-group"]
       if (!groupKey) {
         ungrouped.push(field)
         return
@@ -204,7 +205,9 @@ export default function SchemaForm({
     setTouched((prev) => {
       const next = { ...prev }
       fields.forEach((field) => {
-        next[field.name] = true
+        if (field?.name) {
+          next[field.name] = true
+        }
       })
       return next
     })

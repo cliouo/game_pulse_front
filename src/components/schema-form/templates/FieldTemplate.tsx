@@ -19,13 +19,13 @@ export default function FieldTemplate({
   disabled,
   className,
 }: FieldTemplateProps) {
-  if (schema["x-hidden"]) {
+  if (schema?.["x-hidden"]) {
     return null
   }
 
-  const label = schema.title ?? name
-  const helpText = schema["x-help"] ?? schema.description
-  const isDisabled = Boolean(disabled || schema["x-disabled"])
+  const label = schema?.title ?? name
+  const helpText = schema?.["x-help"] ?? schema?.description
+  const isDisabled = Boolean(disabled || schema?.["x-disabled"])
   const showErrors = errors && errors.length > 0
 
   return (

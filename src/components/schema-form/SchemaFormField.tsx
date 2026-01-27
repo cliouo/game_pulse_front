@@ -19,16 +19,16 @@ type SchemaFormFieldProps = {
 }
 
 const resolveType = (schema: ExtendedJSONSchema) => {
-  if (Array.isArray(schema.type)) {
+  if (Array.isArray(schema?.type)) {
     return schema.type[0]
   }
-  if (schema.type) {
+  if (schema?.type) {
     return schema.type
   }
-  if (schema.properties) {
+  if (schema?.properties) {
     return "object"
   }
-  if (schema.items) {
+  if (schema?.items) {
     return "array"
   }
   return undefined
