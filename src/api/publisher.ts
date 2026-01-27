@@ -13,14 +13,14 @@ import type {
 const publisherApi = {
   async getDashboardStats() {
     const response = await apiClient.get<ApiResponse<PublisherDashboardStats>>(
-      '/api/v1/publisher/dashboard-stats',
+      '/publisher/dashboard-stats',
     );
     return response.data;
   },
 
   async getPotentialGames(params: PotentialGamesQueryParams) {
     const response = await apiClient.get<PaginatedResponse<PotentialGameScore>>(
-      '/api/v1/publisher/potential-games',
+      '/publisher/potential-games',
       { params },
     );
     return response.data;
@@ -28,21 +28,21 @@ const publisherApi = {
 
   async getMarketOpportunities() {
     const response = await apiClient.get<ApiResponse<MarketOpportunity[]>>(
-      '/api/v1/publisher/market-opportunities',
+      '/publisher/market-opportunities',
     );
     return response.data;
   },
 
   async getGameTrends(appId: number) {
     const response = await apiClient.get<ApiResponse<GameTrendData>>(
-      `/api/v1/publisher/games/${appId}/trends`,
+      `/publisher/games/${appId}/trends`,
     );
     return response.data;
   },
 
   async getRecommendations() {
     const response = await apiClient.get<ApiResponse<PublisherRecommendation[]>>(
-      '/api/v1/publisher/recommendations',
+      '/publisher/recommendations',
     );
     return response.data;
   },
