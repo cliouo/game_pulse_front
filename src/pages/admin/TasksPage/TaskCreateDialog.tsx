@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { validateSchema } from "@/components/schema-form"
 import { Button } from "@/components/ui/button"
@@ -78,8 +78,20 @@ export default function TaskCreateDialog({
   const createTemplateMutation = useCreateTaskTemplate()
   const form = useTaskForm({ mode: "create", open })
 
+  // 延迟卸载：Dialog 关闭后等待动画完成再卸载内容
+  const [shouldRender, setShouldRender] = useState(open)
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true)
+    } else {
+      // 等待关闭动画完成后再卸载
+      const timer = setTimeout(() => setShouldRender(false), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [open])
+
   // 调试日志
-  console.log(`[TaskCreateDialog] render, open=${open}`)
+  console.log(`[TaskCreateDialog] render, open=${open}, shouldRender=${shouldRender}`)
 
   const taskType = form.watch("type")
   const selectedTypeOption = useMemo(
@@ -197,6 +209,11 @@ export default function TaskCreateDialog({
   const handleTypeChange = () => {
     form.setValue("parameters", {})
     form.clearErrors("parameters")
+  }
+
+  // 如果不需要渲染，返回 null（彻底避免 Portal 卸载冲突）
+  if (!shouldRender) {
+    return null
   }
 
   return (
