@@ -105,6 +105,7 @@ type TaskCreateDialogProps = {
   saving?: boolean
   validating?: boolean
   onOpenChange: (open: boolean) => void
+  onAnimationEnd?: () => void
   onValidate: (
     taskType: string,
     parameters: Record<string, unknown>
@@ -118,6 +119,7 @@ function TaskCreateDialog({
   saving = false,
   validating = false,
   onOpenChange,
+  onAnimationEnd,
   onValidate,
   onCreate,
 }: TaskCreateDialogProps) {
@@ -152,15 +154,6 @@ function TaskCreateDialog({
         : typeOptions[0].value
     )
   }, [open, typeOptions])
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    setParameters({})
-    setValidationErrors([])
-    setTemplateError(null)
-  }, [open, selectedType])
 
   const selectedTypeOption =
     typeOptions.find((option) => option.value === selectedType) ??
@@ -280,7 +273,7 @@ function TaskCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" onAnimationEnd={onAnimationEnd}>
         <DialogHeader>
           <DialogTitle>创建任务</DialogTitle>
           <DialogDescription>配置新任务的基本信息和参数</DialogDescription>
@@ -291,7 +284,12 @@ function TaskCreateDialog({
               <span>任务类型</span>
               <Select
                 value={selectedType || ""}
-                onValueChange={setSelectedType}
+                onValueChange={(value) => {
+                  setSelectedType(value)
+                  setParameters({})
+                  setValidationErrors([])
+                  setTemplateError(null)
+                }}
               >
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="选择任务类型" />
@@ -724,6 +722,7 @@ export default function TasksPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [createOpen, setCreateOpen] = useState(false)
+  const [createDialogKey, setCreateDialogKey] = useState(0)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editOpen, setEditOpen] = useState(false)
 
@@ -809,6 +808,12 @@ export default function TasksPage() {
   const handleEditAnimationEnd = () => {
     if (!editOpen) {
       setEditingTask(null)
+    }
+  }
+
+  const handleCreateAnimationEnd = () => {
+    if (!createOpen) {
+      setCreateDialogKey((prev) => prev + 1)
     }
   }
 
@@ -963,11 +968,13 @@ export default function TasksPage() {
       ) : null}
 
       <TaskCreateDialog
+        key={createDialogKey}
         open={createOpen}
         typeOptions={typeOptions}
         saving={createMutation.isPending}
         validating={validateMutation.isPending}
         onOpenChange={setCreateOpen}
+        onAnimationEnd={handleCreateAnimationEnd}
         onValidate={validateTaskParams}
         onCreate={handleCreate}
       />
