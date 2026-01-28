@@ -38,14 +38,11 @@ export function useTaskForm({ mode, open, task }: UseTaskFormOptions) {
   })
 
   useEffect(() => {
-    console.log(`[useTaskForm] effect triggered, mode=${mode}, open=${open}`)
     if (mode === "create") {
       if (!open) {
         // 延迟 reset，确保 Dialog 关闭动画完成后再执行
         // 避免在 Portal 移除过程中触发状态变化导致 DOM 不同步
-        console.log(`[useTaskForm] create mode, dialog closed, scheduling delayed form.reset()`)
         const timer = setTimeout(() => {
-          console.log(`[useTaskForm] executing delayed form.reset()`)
           form.reset(taskToFormData())
         }, 200)
         return () => clearTimeout(timer)
@@ -54,7 +51,6 @@ export function useTaskForm({ mode, open, task }: UseTaskFormOptions) {
     }
 
     if (task && open) {
-      console.log(`[useTaskForm] edit mode, dialog opened with task, calling form.reset()`)
       form.reset(taskToFormData(task))
     }
   }, [form, mode, open, task])

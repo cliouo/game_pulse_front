@@ -78,9 +78,6 @@ export default function TaskCreateDialog({
   const createTemplateMutation = useCreateTaskTemplate()
   const form = useTaskForm({ mode: "create", open })
 
-  // 调试日志
-  console.log(`[TaskCreateDialog] render, open=${open}`)
-
   const taskType = form.watch("type")
   const selectedTypeOption = useMemo(
     () => getTaskTypeOption(typeOptions, taskType),
@@ -187,7 +184,6 @@ export default function TaskCreateDialog({
   }
 
   const handleOpenChange = (nextOpen: boolean) => {
-    console.log(`[TaskCreateDialog] handleOpenChange called, nextOpen=${nextOpen}`)
     if (!nextOpen) {
       form.clearErrors()
     }

@@ -2,13 +2,7 @@ import { Controller, useWatch, type UseFormReturn } from "react-hook-form"
 
 import { SchemaForm } from "@/components/schema-form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { NativeSelect } from "@/components/ui/native-select"
 import type { TaskTypeOption } from "@/types"
 
 import { priorityOptions, type TaskFormData } from "./schema"
@@ -63,9 +57,6 @@ export function TaskFormFields({
   const uiSchema = selectedTypeOption?.ui_schema ?? emptyUiSchema
   const parametersDisabled = disabled || (mode === "create" && !selectedType)
 
-  // 调试日志
-  console.log(`[TaskFormFields] render, mode=${mode}, selectedType=${selectedType}`)
-
   return (
     <div className="grid gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
@@ -76,34 +67,19 @@ export function TaskFormFields({
             render={({ field, fieldState }) => (
               <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
                 <span>任务类型</span>
-                <Select
+                <NativeSelect
                   value={field.value || ""}
-                  onValueChange={(value) => {
+                  onChange={(value) => {
                     field.onChange(value)
                     onTypeChange?.()
                   }}
                   disabled={disabled}
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder="选择任务类型" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {typeOptions.length > 0 ? (
-                      typeOptions.map((option) => (
-                        <SelectItem
-                          key={`create-type-${option.value}`}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="__empty" disabled>
-                        暂无可用任务类型
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                  placeholder="选择任务类型"
+                  options={typeOptions.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                />
                 <FieldError message={fieldState.error?.message} />
               </label>
             )}
@@ -160,22 +136,15 @@ export function TaskFormFields({
           render={({ field, fieldState }) => (
             <label className="space-y-1 text-xs text-muted-foreground">
               <span>优先级</span>
-              <Select
+              <NativeSelect
                 value={field.value}
-                onValueChange={(value) => field.onChange(value)}
+                onChange={(value) => field.onChange(value)}
                 disabled={disabled}
-              >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="选择优先级" />
-                </SelectTrigger>
-                <SelectContent>
-                  {priorityOptions.map((option) => (
-                    <SelectItem key={`priority-${option}`} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={priorityOptions.map((option) => ({
+                  value: option,
+                  label: option,
+                }))}
+              />
               <FieldError message={fieldState.error?.message} />
             </label>
           )}
@@ -186,19 +155,15 @@ export function TaskFormFields({
           render={({ field, fieldState }) => (
             <label className="space-y-1 text-xs text-muted-foreground">
               <span>启用状态</span>
-              <Select
+              <NativeSelect
                 value={field.value ? "true" : "false"}
-                onValueChange={(value) => field.onChange(value === "true")}
+                onChange={(value) => field.onChange(value === "true")}
                 disabled={disabled}
-              >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="选择状态" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">启用</SelectItem>
-                  <SelectItem value="false">停用</SelectItem>
-                </SelectContent>
-              </Select>
+                options={[
+                  { value: "true", label: "启用" },
+                  { value: "false", label: "停用" },
+                ]}
+              />
               <FieldError message={fieldState.error?.message} />
             </label>
           )}
@@ -330,19 +295,15 @@ export function TaskFormFields({
             render={({ field, fieldState }) => (
               <label className="space-y-1 text-xs text-muted-foreground">
                 <span>单次执行</span>
-                <Select
+                <NativeSelect
                   value={field.value ? "true" : "false"}
-                  onValueChange={(value) => field.onChange(value === "true")}
+                  onChange={(value) => field.onChange(value === "true")}
                   disabled={disabled}
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder="选择模式" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">是</SelectItem>
-                    <SelectItem value="false">否</SelectItem>
-                  </SelectContent>
-                </Select>
+                  options={[
+                    { value: "true", label: "是" },
+                    { value: "false", label: "否" },
+                  ]}
+                />
                 <FieldError message={fieldState.error?.message} />
               </label>
             )}

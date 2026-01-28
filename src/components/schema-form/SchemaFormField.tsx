@@ -1,5 +1,3 @@
-import * as React from "react"
-
 import type { ExtendedJSONSchema, UISchema } from "@/types/schema"
 
 import { useSchemaFormContext } from "./SchemaFormContext"
@@ -44,7 +42,6 @@ export default function SchemaFormField({
   className,
   path,
 }: SchemaFormFieldProps) {
-  const instanceId = React.useRef(Math.random().toString(36).slice(2, 8))
   const {
     value: formValue,
     uiSchema: formUiSchema,
@@ -52,13 +49,6 @@ export default function SchemaFormField({
     setFieldTouched,
     getFieldError,
   } = useSchemaFormContext()
-
-  React.useEffect(() => {
-    console.log(`[SchemaFormField ${instanceId.current}] MOUNTED name=${name}`)
-    return () => {
-      console.log(`[SchemaFormField ${instanceId.current}] UNMOUNTING name=${name}`)
-    }
-  }, [name])
 
   const fieldUiSchema =
     uiSchema ?? (path ? undefined : (formUiSchema?.[name] as UISchema | undefined))
@@ -70,11 +60,9 @@ export default function SchemaFormField({
   const errors = path ? undefined : getFieldError(name)
 
   if (schema["x-hidden"]) {
-    console.log(`[SchemaFormField ${instanceId.current}] hidden, returning null for name=${name}`)
     return null
   }
   if (!evaluateDependsOn(schema["x-dependsOn"], formValue)) {
-    console.log(`[SchemaFormField ${instanceId.current}] dependsOn not met, returning null for name=${name}`)
     return null
   }
 
