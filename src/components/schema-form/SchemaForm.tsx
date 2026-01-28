@@ -32,6 +32,9 @@ const setValueAtPath = (
   path: string,
   fieldValue: unknown
 ) => {
+  if (typeof path !== "string" || !path) {
+    return value
+  }
   const segments = path.split(".").filter(Boolean)
   if (!segments.length) {
     return value

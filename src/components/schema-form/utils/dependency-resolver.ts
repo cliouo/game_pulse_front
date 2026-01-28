@@ -4,7 +4,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 const isNumericSegment = (segment: string) => /^\d+$/.test(segment)
 
 export const getValueAtPath = (value: unknown, path: string) => {
-  if (!path) {
+  if (typeof path !== "string" || !path) {
     return value
   }
   const segments = path.split(".").filter(Boolean)

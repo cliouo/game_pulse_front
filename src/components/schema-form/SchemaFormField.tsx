@@ -51,7 +51,9 @@ export default function SchemaFormField({
   } = useSchemaFormContext()
   const fieldUiSchema =
     uiSchema ?? (path ? undefined : (formUiSchema?.[name] as UISchema | undefined))
-  const fieldPath = path ? `${path}.${name}` : name
+  const safeName = typeof name === "string" ? name : String(name)
+  const safePath = typeof path === "string" ? path : undefined
+  const fieldPath = safePath ? `${safePath}.${safeName}` : safeName
   const fieldValue = getValueAtPath(formValue, fieldPath)
   const isDisabled = Boolean(disabled || schema["x-disabled"])
   const errors = path ? undefined : getFieldError(name)
