@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import Pagination from "@/components/common/Pagination"
 import TaskTable from "@/components/admin/TaskTable"
@@ -467,9 +467,9 @@ function TaskEditDialog({
   onValidate,
   onSave,
 }: TaskEditDialogProps) {
-  const [formValues, setFormValues] = useState(() => buildFormValues(task))
+  const [formValues, setFormValues] = useState(() => buildFormValues(task ?? undefined))
   const [parameters, setParameters] = useState<Record<string, unknown>>(() => {
-    if (task.parameters && typeof task.parameters === "object") {
+    if (task?.parameters && typeof task.parameters === "object") {
       return task.parameters as Record<string, unknown>
     }
     return {}
@@ -477,9 +477,9 @@ function TaskEditDialog({
   const [validationErrors, setValidationErrors] = useState<string[]>([])
 
   const selectedTypeOption =
-    typeOptions.find((option) => option.value === task.type) ?? {
-      value: task.type,
-      label: task.type,
+    typeOptions.find((option) => option.value === task?.type) ?? {
+      value: task?.type ?? "",
+      label: task?.type ?? "",
       description: "",
       schema: emptySchema,
       ui_schema: emptyUiSchema,
@@ -497,6 +497,8 @@ function TaskEditDialog({
   }
 
   const handleSave = async () => {
+    if (!task) return
+
     const normalized = validateSchema(schema, parameters)
     setParameters(normalized.data)
     try {
@@ -612,7 +614,7 @@ function TaskEditDialog({
               参数配置
             </div>
             <SchemaForm
-              key={`task-edit-${task.id}`}
+              key={`task-edit-${task?.id ?? "new"}`}
               schema={schema}
               uiSchema={uiSchema}
               value={parameters}
