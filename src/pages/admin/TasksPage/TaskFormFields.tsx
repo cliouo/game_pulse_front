@@ -217,6 +217,7 @@ export function TaskFormFields({
               }}
               liveValidate
               disabled={parametersDisabled}
+              nested
               className="rounded-md border border-border/60 bg-muted/10 p-4"
             />
           )}

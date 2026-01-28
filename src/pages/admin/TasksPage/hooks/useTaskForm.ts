@@ -40,7 +40,12 @@ export function useTaskForm({ mode, open, task }: UseTaskFormOptions) {
   useEffect(() => {
     if (mode === "create") {
       if (!open) {
-        form.reset(taskToFormData())
+        // 延迟 reset，确保 Dialog 关闭动画完成后再执行
+        // 避免在 Portal 移除过程中触发状态变化导致 DOM 不同步
+        const timer = setTimeout(() => {
+          form.reset(taskToFormData())
+        }, 200)
+        return () => clearTimeout(timer)
       }
       return
     }

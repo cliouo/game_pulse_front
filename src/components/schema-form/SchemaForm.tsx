@@ -104,6 +104,7 @@ export default function SchemaForm({
   liveValidate = false,
   disabled = false,
   className,
+  nested = false,
 }: SchemaFormProps) {
   const [errors, setErrors] = React.useState<Record<string, string[]>>({})
   const [touched, setTouched] = React.useState<Record<string, boolean>>({})
@@ -230,6 +231,29 @@ export default function SchemaForm({
     }
   }
 
+  const formContent = (
+    <>
+      {groups.grouped.map((group) => (
+        <GroupTemplate
+          key={group.key}
+          groupId={group.key}
+          config={group.config}
+          fields={group.fields}
+          disabled={disabled}
+        />
+      ))}
+      {groups.ungrouped.map((field) => (
+        <SchemaFormField
+          key={field.name}
+          name={field.name}
+          schema={field.schema}
+          uiSchema={field.uiSchema}
+          disabled={disabled}
+        />
+      ))}
+    </>
+  )
+
   return (
     <SchemaFormProvider
       schema={schema}
@@ -242,30 +266,17 @@ export default function SchemaForm({
       setFieldTouched={setFieldTouched}
       getFieldError={getFieldError}
     >
-      <form
-        className={cn("space-y-4", className)}
-        onSubmit={handleSubmit}
-        noValidate
-      >
-        {groups.grouped.map((group) => (
-          <GroupTemplate
-            key={group.key}
-            groupId={group.key}
-            config={group.config}
-            fields={group.fields}
-            disabled={disabled}
-          />
-        ))}
-        {groups.ungrouped.map((field) => (
-          <SchemaFormField
-            key={field.name}
-            name={field.name}
-            schema={field.schema}
-            uiSchema={field.uiSchema}
-            disabled={disabled}
-          />
-        ))}
-      </form>
+      {nested ? (
+        <div className={cn("space-y-4", className)}>{formContent}</div>
+      ) : (
+        <form
+          className={cn("space-y-4", className)}
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          {formContent}
+        </form>
+      )}
     </SchemaFormProvider>
   )
 }

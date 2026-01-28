@@ -49,6 +49,8 @@ export interface SchemaFormProps {
   liveValidate?: boolean;
   disabled?: boolean;
   className?: string;
+  /** 当嵌入到已有 form 中时设为 true，避免嵌套 form 标签 */
+  nested?: boolean;
 }
 
 export interface FieldProps {
