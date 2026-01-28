@@ -19,11 +19,13 @@ export default function FieldTemplate({
   disabled,
   className,
 }: FieldTemplateProps) {
+  const safeName = typeof name === "string" ? name : String(name)
+
   if (schema?.["x-hidden"]) {
     return null
   }
 
-  const label = schema?.title ?? name
+  const label = schema?.title ?? safeName
   const helpText = schema?.["x-help"] ?? schema?.description
   const isDisabled = Boolean(disabled || schema?.["x-disabled"])
   const showErrors = errors && errors.length > 0
@@ -41,7 +43,7 @@ export default function FieldTemplate({
       {showErrors ? (
         <ul className="space-y-1 text-xs text-destructive">
           {errors.map((error, index) => (
-            <li key={`${name}-error-${index}`}>{error}</li>
+            <li key={`${safeName}-error-${index}`}>{error}</li>
           ))}
         </ul>
       ) : null}

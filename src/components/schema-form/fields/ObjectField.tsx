@@ -66,6 +66,8 @@ export default function ObjectField({
   className,
   path,
 }: ObjectFieldProps) {
+  const safeName = typeof name === "string" ? name : String(name)
+  const safePath = typeof path === "string" ? path : undefined
   const [collapsed, setCollapsed] = React.useState(
     Boolean(schema?.["x-collapsed"])
   )
@@ -73,7 +75,7 @@ export default function ObjectField({
     () => getFieldEntries(schema, uiSchema),
     [schema, uiSchema]
   )
-  const title = schema?.title ?? name
+  const title = schema?.title ?? safeName
   const helpText = schema?.["x-help"] ?? schema?.description
   const isDisabled = Boolean(disabled || schema?.["x-disabled"])
   const showErrors = errors && errors.length > 0
@@ -121,13 +123,13 @@ export default function ObjectField({
                     schema={field.schema}
                     uiSchema={field.uiSchema}
                     disabled={isDisabled}
-                    path={path ?? name}
+                    path={safePath ?? safeName}
                   />
                 ))}
                 {showErrors ? (
                   <ul className="space-y-1 text-xs text-destructive">
                     {errors.map((error, index) => (
-                      <li key={`${name}-error-${index}`}>{error}</li>
+                      <li key={`${safeName}-error-${index}`}>{error}</li>
                     ))}
                   </ul>
                 ) : null}

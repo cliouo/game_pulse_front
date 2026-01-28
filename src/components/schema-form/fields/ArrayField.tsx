@@ -91,6 +91,8 @@ export default function ArrayField({
   className,
   path,
 }: ArrayFieldProps) {
+  const safeName = typeof name === "string" ? name : String(name)
+  const safePath = typeof path === "string" ? path : undefined
   const items = Array.isArray(value) ? value : []
   const itemSchema =
     schema?.items && typeof schema.items === "object"
@@ -100,7 +102,7 @@ export default function ArrayField({
       : undefined
   const itemUiSchema =
     typeof uiSchema?.items === "object" ? (uiSchema.items as UISchema) : undefined
-  const label = schema?.title ?? name
+  const label = schema?.title ?? safeName
   const helpText = schema?.["x-help"] ?? schema?.description
   const isDisabled = Boolean(disabled || schema?.["x-disabled"])
   const uniqueError =
@@ -132,7 +134,7 @@ export default function ArrayField({
       {label ? <Label className="text-sm font-medium">{label}</Label> : null}
       <div className="space-y-3">
         {items.map((_, index) => (
-          <div key={`${name}-item-${index}`} className="space-y-3 rounded-lg border p-4">
+          <div key={`${safeName}-item-${index}`} className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Item {index + 1}</span>
               <Button
@@ -152,7 +154,7 @@ export default function ArrayField({
                 schema={itemSchema}
                 uiSchema={itemUiSchema}
                 disabled={isDisabled}
-                path={path ?? name}
+                path={safePath ?? safeName}
               />
             ) : null}
           </div>
@@ -174,7 +176,7 @@ export default function ArrayField({
       {showErrors ? (
         <ul className="space-y-1 text-xs text-destructive">
           {errorList.map((error, index) => (
-            <li key={`${name}-error-${index}`}>{error}</li>
+            <li key={`${safeName}-error-${index}`}>{error}</li>
           ))}
         </ul>
       ) : null}
