@@ -465,43 +465,48 @@ function TaskEditDialog({
   onValidate,
   onSave,
 }: TaskEditDialogProps) {
+  const initialTaskRef = useRef<Task | null>(null)
+
+  useEffect(() => {
+    if (open && task && task.id !== initialTaskRef.current?.id) {
+      initialTaskRef.current = task
+    }
+  }, [open, task])
+
+  const currentTask = open && task ? task : initialTaskRef.current
+
   const [formValues, setFormValues] = useState(() =>
-    buildFormValues(task ?? undefined)
+    buildFormValues(currentTask ?? undefined)
   )
   const [parameters, setParameters] = useState<Record<string, unknown>>(() => {
-    if (task?.parameters && typeof task.parameters === "object") {
-      return task.parameters as Record<string, unknown>
+    if (currentTask?.parameters && typeof currentTask.parameters === "object") {
+      return currentTask.parameters as Record<string, unknown>
     }
     return {}
   })
   const [validationErrors, setValidationErrors] = useState<string[]>([])
-  const prevTaskIdRef = useRef<number | null>(null)
 
   useEffect(() => {
-    if (!open) {
+    if (!open || !currentTask || currentTask.id === initialTaskRef.current?.id) {
       return
     }
-    if (!task || task.id === prevTaskIdRef.current) {
-      return
-    }
-    prevTaskIdRef.current = task.id
-    setFormValues(buildFormValues(task))
+    setFormValues(buildFormValues(currentTask))
     setParameters(
-      task.parameters && typeof task.parameters === "object"
-        ? (task.parameters as Record<string, unknown>)
+      currentTask.parameters && typeof currentTask.parameters === "object"
+        ? (currentTask.parameters as Record<string, unknown>)
         : {}
     )
     setValidationErrors([])
-  }, [open, task])
+  }, [open, currentTask])
 
-  if (!task) {
+  if (!currentTask) {
     return null
   }
 
   const selectedTypeOption =
-    typeOptions.find((option) => option.value === task.type) ?? {
-      value: task.type,
-      label: task.type,
+    typeOptions.find((option) => option.value === currentTask.type) ?? {
+      value: currentTask.type,
+      label: currentTask.type,
       description: "",
       schema: emptySchema,
       ui_schema: emptyUiSchema,
@@ -522,7 +527,7 @@ function TaskEditDialog({
     const normalized = validateSchema(schema, parameters)
     setParameters(normalized.data)
     try {
-      const validationResult = await onValidate(task.type, normalized.data)
+      const validationResult = await onValidate(currentTask.type, normalized.data)
       if (!validationResult.valid) {
         const errors =
           validationResult.errors && validationResult.errors.length > 0
@@ -537,7 +542,7 @@ function TaskEditDialog({
       return
     }
 
-    onSave(task, formValues, normalized.data)
+    onSave(currentTask, formValues, normalized.data)
   }
 
   return (
@@ -634,7 +639,7 @@ function TaskEditDialog({
               参数配置
             </div>
             <SchemaForm
-              key={`task-edit-${task.id}`}
+              key={`task-edit-${currentTask.id}`}
               schema={schema}
               uiSchema={uiSchema}
               value={parameters}
