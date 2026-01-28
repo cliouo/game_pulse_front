@@ -43,17 +43,17 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
             </Button>
           </div>
         ) : query.isLoading ? (
-          <div className="flex gap-4 overflow-x-auto pb-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {placeholderItems.map((_, index) => (
               <GameCard
                 key={`hot-loading-${index}`}
                 loading
-                className="w-[220px] shrink-0"
+                className="w-full"
               />
             ))}
           </div>
         ) : games.length > 0 ? (
-          <div className="flex gap-4 overflow-x-auto pb-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {games.map((game) => (
               <GameCard
                 key={`hot-game-${game.id}`}
@@ -67,7 +67,7 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
                 headerImage={game.header_image}
                 storeUrl={game.store_url}
                 comingSoon={game.coming_soon}
-                className="w-[220px] shrink-0"
+                className="w-full"
               />
             ))}
           </div>

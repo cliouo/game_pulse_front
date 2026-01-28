@@ -67,7 +67,7 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">
@@ -115,8 +115,8 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Card className="border-border/60 bg-card/60 shadow-sm transition hover:border-primary/40 hover:shadow-[0_0_18px_rgba(168,85,247,0.15)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="border-border/60 bg-card/60 shadow-sm transition hover:border-primary/40 hover:shadow-[0_0_18px_rgba(168,85,247,0.15)] lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">风险分布</CardTitle>
           </CardHeader>

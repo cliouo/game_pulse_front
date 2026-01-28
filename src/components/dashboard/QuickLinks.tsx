@@ -68,7 +68,7 @@ type QuickLinksProps = {
 
 export default function QuickLinks({ className }: QuickLinksProps) {
   return (
-    <div className={cn("flex gap-3 overflow-x-auto pb-2", className)}>
+    <div className={cn("grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1", className)}>
       {quickLinks.map((link) => {
         const style = toneStyles[link.tone]
         const Icon = link.icon
@@ -76,7 +76,7 @@ export default function QuickLinks({ className }: QuickLinksProps) {
           <Link
             key={link.title}
             to={link.to}
-            className="group min-w-[180px] shrink-0"
+            className="group block w-full"
           >
             <Card
               className={cn(
