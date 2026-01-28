@@ -1,5 +1,4 @@
 import GameCard from "@/components/common/GameCard"
-import { AnimatedList } from "@/components/ui/animated-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { usePotentialGames } from "@/hooks/use-publisher"
@@ -54,10 +53,7 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
             ))}
           </div>
         ) : games.length > 0 ? (
-          <AnimatedList
-            className="flex gap-4 overflow-x-auto pb-2 [&>div]:shrink-0"
-            delay={100}
-          >
+          <div className="flex gap-4 overflow-x-auto pb-2">
             {games.map((game) => (
               <GameCard
                 key={`hot-game-${game.id}`}
@@ -74,7 +70,7 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
                 className="w-[200px] shrink-0"
               />
             ))}
-          </AnimatedList>
+          </div>
         ) : (
           <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-sm text-muted-foreground">
             暂无高潜力游戏
