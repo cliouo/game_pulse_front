@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import Pagination from "@/components/common/Pagination"
 import TaskTable from "@/components/admin/TaskTable"
@@ -475,11 +475,16 @@ function TaskEditDialog({
     return {}
   })
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const prevTaskIdRef = useRef<number | null>(null)
 
   useEffect(() => {
-    if (!open || !task) {
+    if (!open) {
       return
     }
+    if (!task || task.id === prevTaskIdRef.current) {
+      return
+    }
+    prevTaskIdRef.current = task.id
     setFormValues(buildFormValues(task))
     setParameters(
       task.parameters && typeof task.parameters === "object"
