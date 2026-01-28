@@ -152,7 +152,7 @@ export default function GameCard({
         <Skeleton
           className={cn(
             "rounded-lg",
-            layout === "list" ? "h-24 w-full sm:h-24 sm:w-32" : "h-44 w-full"
+            layout === "list" ? "h-24 w-full sm:h-24 sm:w-32" : "aspect-video w-full"
           )}
         />
         <div
@@ -289,7 +289,7 @@ export default function GameCard({
         )}
       >
         <div className="relative">
-          <div className="aspect-[4/5] w-full overflow-hidden border-b border-border/60 bg-muted/40">
+          <div className="aspect-video w-full overflow-hidden border-b border-border/60 bg-muted/40">
             {imageUrl ? (
               <img
                 src={imageUrl}
@@ -330,7 +330,7 @@ export default function GameCard({
             </div>
           ) : null}
         </div>
-        <CardContent className="space-y-3 p-4">
+        <CardContent className="space-y-2 p-3">
           <div className="space-y-1">
             <h3 className="text-sm font-semibold text-foreground">{displayName}</h3>
             <p className="text-xs text-muted-foreground">

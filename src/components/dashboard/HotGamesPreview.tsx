@@ -48,7 +48,7 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
               <GameCard
                 key={`hot-loading-${index}`}
                 loading
-                className="w-[200px] shrink-0"
+                className="w-[220px] shrink-0"
               />
             ))}
           </div>
@@ -67,7 +67,7 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
                 headerImage={game.header_image}
                 storeUrl={game.store_url}
                 comingSoon={game.coming_soon}
-                className="w-[200px] shrink-0"
+                className="w-[220px] shrink-0"
               />
             ))}
           </div>
