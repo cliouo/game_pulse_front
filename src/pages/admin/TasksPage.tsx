@@ -444,6 +444,7 @@ type TaskEditDialogProps = {
   validating?: boolean
   typeOptions: TaskTypeOption[]
   onOpenChange: (open: boolean) => void
+  onAnimationEnd?: () => void
   onValidate: (
     taskType: string,
     parameters: Record<string, unknown>
@@ -462,51 +463,23 @@ function TaskEditDialog({
   validating = false,
   typeOptions,
   onOpenChange,
+  onAnimationEnd,
   onValidate,
   onSave,
 }: TaskEditDialogProps) {
-  const initialTaskRef = useRef<Task | null>(null)
-
-  useEffect(() => {
-    if (open && task && task.id !== initialTaskRef.current?.id) {
-      initialTaskRef.current = task
-    }
-  }, [open, task])
-
-  const currentTask = open && task ? task : initialTaskRef.current
-
-  const [formValues, setFormValues] = useState(() =>
-    buildFormValues(currentTask ?? undefined)
-  )
+  const [formValues, setFormValues] = useState(() => buildFormValues(task))
   const [parameters, setParameters] = useState<Record<string, unknown>>(() => {
-    if (currentTask?.parameters && typeof currentTask.parameters === "object") {
-      return currentTask.parameters as Record<string, unknown>
+    if (task.parameters && typeof task.parameters === "object") {
+      return task.parameters as Record<string, unknown>
     }
     return {}
   })
   const [validationErrors, setValidationErrors] = useState<string[]>([])
 
-  useEffect(() => {
-    if (!open || !currentTask || currentTask.id === initialTaskRef.current?.id) {
-      return
-    }
-    setFormValues(buildFormValues(currentTask))
-    setParameters(
-      currentTask.parameters && typeof currentTask.parameters === "object"
-        ? (currentTask.parameters as Record<string, unknown>)
-        : {}
-    )
-    setValidationErrors([])
-  }, [open, currentTask])
-
-  if (!currentTask) {
-    return null
-  }
-
   const selectedTypeOption =
-    typeOptions.find((option) => option.value === currentTask.type) ?? {
-      value: currentTask.type,
-      label: currentTask.type,
+    typeOptions.find((option) => option.value === task.type) ?? {
+      value: task.type,
+      label: task.type,
       description: "",
       schema: emptySchema,
       ui_schema: emptyUiSchema,
@@ -527,7 +500,7 @@ function TaskEditDialog({
     const normalized = validateSchema(schema, parameters)
     setParameters(normalized.data)
     try {
-      const validationResult = await onValidate(currentTask.type, normalized.data)
+      const validationResult = await onValidate(task.type, normalized.data)
       if (!validationResult.valid) {
         const errors =
           validationResult.errors && validationResult.errors.length > 0
@@ -542,12 +515,12 @@ function TaskEditDialog({
       return
     }
 
-    onSave(currentTask, formValues, normalized.data)
+    onSave(task, formValues, normalized.data)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" onAnimationEnd={onAnimationEnd}>
         <DialogHeader>
           <DialogTitle>编辑任务</DialogTitle>
           <DialogDescription>修改任务配置和参数设置</DialogDescription>
@@ -639,7 +612,7 @@ function TaskEditDialog({
               参数配置
             </div>
             <SchemaForm
-              key={`task-edit-${currentTask.id}`}
+              key={`task-edit-${task.id}`}
               schema={schema}
               uiSchema={uiSchema}
               value={parameters}
@@ -829,7 +802,10 @@ export default function TasksPage() {
 
   const handleEditOpenChange = (open: boolean) => {
     setEditOpen(open)
-    if (!open) {
+  }
+
+  const handleEditAnimationEnd = () => {
+    if (!editOpen) {
       setEditingTask(null)
     }
   }
@@ -993,16 +969,20 @@ export default function TasksPage() {
         onValidate={validateTaskParams}
         onCreate={handleCreate}
       />
-      <TaskEditDialog
-        open={editOpen}
-        task={editingTask}
-        saving={updateMutation.isPending}
-        validating={validateMutation.isPending}
-        typeOptions={typeOptions}
-        onOpenChange={handleEditOpenChange}
-        onValidate={validateTaskParams}
-        onSave={handleSave}
-      />
+      {editingTask && (
+        <TaskEditDialog
+          key={editingTask.id}
+          open={editOpen}
+          task={editingTask}
+          saving={updateMutation.isPending}
+          validating={validateMutation.isPending}
+          typeOptions={typeOptions}
+          onOpenChange={handleEditOpenChange}
+          onAnimationEnd={handleEditAnimationEnd}
+          onValidate={validateTaskParams}
+          onSave={handleSave}
+        />
+      )}
     </div>
   )
 }
