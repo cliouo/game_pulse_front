@@ -67,9 +67,12 @@ SelectScrollDownButton.displayName =
 
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Portal>
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
+    /** 禁用 Portal，用于在 Dialog 等已有 Portal 的容器中使用，避免嵌套 Portal 导致的 DOM 卸载冲突 */
+    disablePortal?: boolean
+  }
+>(({ className, children, position = "popper", disablePortal, ...props }, ref) => {
+  const content = (
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
@@ -93,8 +96,14 @@ const SelectContent = React.forwardRef<
       </SelectPrimitive.Viewport>
       <SelectScrollDownButton />
     </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-))
+  )
+
+  if (disablePortal) {
+    return content
+  }
+
+  return <SelectPrimitive.Portal>{content}</SelectPrimitive.Portal>
+})
 SelectContent.displayName = SelectPrimitive.Content.displayName
 
 const SelectLabel = React.forwardRef<

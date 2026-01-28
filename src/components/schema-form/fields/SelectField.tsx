@@ -44,8 +44,9 @@ export default function SelectField({
     schema?.type === "number" ||
     schema?.type === "integer" ||
     enumValues.every((option: unknown) => typeof option === "number")
+  // 使用空字符串而不是 undefined，确保 Select 始终是受控组件
   const selectValue =
-    value === undefined || value === null ? undefined : String(value)
+    value === undefined || value === null ? "" : String(value)
   const placeholder = schema?.["x-placeholder"] ?? "请选择"
 
   const handleValueChange = (nextValue: string) => {
@@ -70,7 +71,7 @@ export default function SelectField({
       <SelectTrigger className={cn(className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent disablePortal>
         {options.map((option: { value: string; label: string; raw: unknown }) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
