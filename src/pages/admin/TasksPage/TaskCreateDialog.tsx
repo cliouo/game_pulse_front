@@ -87,7 +87,7 @@ export default function TaskCreateDialog({
   const isTemplateLoading = createTemplateMutation.isPending
   const isWorking = saving || validating || isTemplateLoading
   const parameterError = form.formState.errors.parameters?.message as string | undefined
-  const rootError = form.formState.errors.root?.message
+  const rootError = (form.formState.errors as any).root?.message as string | undefined
   const validationErrors =
     typeof parameterError === "string" && parameterError.length > 0
       ? parameterError.split("\n")
@@ -160,7 +160,7 @@ export default function TaskCreateDialog({
       return
     }
 
-    form.clearErrors("root")
+    form.clearErrors("root" as any)
     try {
       const response = await createTemplateMutation.mutateAsync({
         type: currentType,
@@ -176,7 +176,7 @@ export default function TaskCreateDialog({
       })
       form.clearErrors()
     } catch {
-      form.setError("root", {
+      form.setError("root" as any, {
         type: "template",
         message: "模板加载失败，请稍后重试",
       })
@@ -192,7 +192,7 @@ export default function TaskCreateDialog({
 
   const handleTypeChange = () => {
     form.setValue("parameters", {})
-    form.clearErrors(["parameters", "root"])
+    form.clearErrors("parameters")
   }
 
   return (
