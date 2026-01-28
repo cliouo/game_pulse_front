@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react"
+
 import {
   Select,
   SelectContent,
@@ -19,6 +21,15 @@ export default function SelectField({
   disabled,
   className,
 }: SelectFieldProps) {
+  const instanceId = useRef(Math.random().toString(36).slice(2, 8))
+
+  useEffect(() => {
+    console.log(`[SelectField ${instanceId.current}] MOUNTED`)
+    return () => {
+      console.log(`[SelectField ${instanceId.current}] UNMOUNTING`)
+    }
+  }, [])
+
   const enumValues = Array.isArray(schema?.enum) ? schema.enum : []
   if (!enumValues.length) {
     return null
