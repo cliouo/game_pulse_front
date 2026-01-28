@@ -27,7 +27,11 @@ const getErrorKey = (error: ErrorObject) => {
   ) {
     return (error.params as { missingProperty: string }).missingProperty
   }
-  const path = error.instancePath?.replace(/^\//, "")
+  const rawPath = error.instancePath
+  if (typeof rawPath !== "string" || !rawPath) {
+    return undefined
+  }
+  const path = rawPath.replace(/^\//, "")
   if (!path) {
     return undefined
   }

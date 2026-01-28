@@ -32,12 +32,13 @@ export const BlurText = ({
     hidden: { filter: "blur(10px)", opacity: 0, transform: direction === 'top' ? 'translate3d(0,-50px,0)' : 'translate3d(0,50px,0)' },
     visible: { filter: "blur(0px)", opacity: 1, transform: 'translate3d(0,0,0)' },
   }
-  
+
   const combinedVariants = variant || defaultVariants
-  const items = animateBy === "words" ? text.split(" ") : text.split("")
+  const safeText = typeof text === "string" ? text : String(text)
+  const items = animateBy === "words" ? safeText.split(" ") : safeText.split("")
 
   if (shouldReduceMotion) {
-      return <span className={className}>{text}</span>
+      return <span className={className}>{safeText}</span>
   }
 
   return (
