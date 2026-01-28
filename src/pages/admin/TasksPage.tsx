@@ -290,7 +290,7 @@ function TaskCreateDialog({
             <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
               <span>任务类型</span>
               <Select
-                value={selectedType || undefined}
+                value={selectedType || ""}
                 onValueChange={setSelectedType}
               >
                 <SelectTrigger className="h-9">
@@ -476,6 +476,19 @@ function TaskEditDialog({
   })
   const [validationErrors, setValidationErrors] = useState<string[]>([])
 
+  useEffect(() => {
+    if (!open || !task) {
+      return
+    }
+    setFormValues(buildFormValues(task))
+    setParameters(
+      task.parameters && typeof task.parameters === "object"
+        ? (task.parameters as Record<string, unknown>)
+        : {}
+    )
+    setValidationErrors([])
+  }, [open, task])
+
   if (!task) {
     return null
   }
@@ -616,7 +629,7 @@ function TaskEditDialog({
               参数配置
             </div>
             <SchemaForm
-              key={task.type}
+              key={`task-edit-${task.id}`}
               schema={schema}
               uiSchema={uiSchema}
               value={parameters}
@@ -971,7 +984,6 @@ export default function TasksPage() {
         onCreate={handleCreate}
       />
       <TaskEditDialog
-        key={editingTask?.id ?? "task-editor"}
         open={editOpen}
         task={editingTask}
         saving={updateMutation.isPending}
