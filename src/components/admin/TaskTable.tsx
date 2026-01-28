@@ -59,7 +59,7 @@ const priorityToneMap: Record<TaskPriority, string> = {
 }
 
 const formatDateTime = (value?: string) => {
-  if (!value) {
+  if (!value || typeof value !== "string") {
     return "--"
   }
   const parsed = parseISO(value)

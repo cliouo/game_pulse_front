@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils"
 import type { TaskStats as TaskStatsItem } from "@/types"
 
 const formatDateTime = (value?: string) => {
-  if (!value) {
+  if (!value || typeof value !== "string") {
     return "--"
   }
   const parsed = parseISO(value)
