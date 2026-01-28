@@ -208,7 +208,6 @@ export function TaskFormFields({
           control={form.control}
           render={({ field }) => (
             <SchemaForm
-              key={`${mode}-${selectedType || "task"}`}
               schema={schema}
               uiSchema={uiSchema}
               value={(field.value ?? {}) as Record<string, unknown>}

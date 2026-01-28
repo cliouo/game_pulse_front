@@ -193,6 +193,16 @@ export default function SchemaForm({
     [schema, onChange]
   )
 
+  // 当 schema 变化时重置内部状态，避免依赖 key 强制重建组件
+  const schemaRef = React.useRef(schema)
+  React.useEffect(() => {
+    if (schemaRef.current !== schema) {
+      schemaRef.current = schema
+      setErrors({})
+      setTouched({})
+    }
+  }, [schema])
+
   React.useEffect(() => {
     if (!liveValidate) {
       return undefined
