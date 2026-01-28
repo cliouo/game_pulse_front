@@ -70,8 +70,11 @@ const getStatusTone = (status?: string) => {
   }
 }
 
-const getRecentStats = (stats: TaskStatsItem[]) =>
-  stats
+const getRecentStats = (stats: TaskStatsItem[]) => {
+  if (!Array.isArray(stats)) {
+    return []
+  }
+  return stats
     .filter((item) => Boolean(item.last_run_time))
     .sort(
       (a, b) =>
@@ -79,13 +82,14 @@ const getRecentStats = (stats: TaskStatsItem[]) =>
         new Date(a.last_run_time).getTime()
     )
     .slice(0, 6)
+}
 
 export default function AdminDashboard() {
   const statsQuery = useTaskStats()
-  const stats = useMemo(
-    () => statsQuery.data?.data ?? [],
-    [statsQuery.data?.data]
-  )
+  const stats = useMemo(() => {
+    const data = statsQuery.data?.data
+    return Array.isArray(data) ? data : []
+  }, [statsQuery.data?.data])
 
   const recentStats = useMemo(() => getRecentStats(stats), [stats])
 

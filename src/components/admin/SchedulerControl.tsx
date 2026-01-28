@@ -120,10 +120,14 @@ export default function SchedulerControl() {
   const isStorePending = runJobMutation.isPending && pendingJobType === "store"
   const isStatsPending = runJobMutation.isPending && pendingJobType === "stats"
   const taskSchedules = useMemo(() => {
-    if (!status?.tasks) {
+    if (!status?.tasks || typeof status.tasks !== "object") {
       return []
     }
-    return Object.values(status.tasks).sort((a, b) =>
+    const values = Object.values(status.tasks)
+    if (!Array.isArray(values)) {
+      return []
+    }
+    return values.sort((a, b) =>
       a.name.localeCompare(b.name)
     )
   }, [status?.tasks])
@@ -289,10 +293,7 @@ export default function SchedulerControl() {
                       <div className="text-muted-foreground">启用任务</div>
                       <div className="mt-1 text-sm font-semibold text-emerald-400">
                         {formatNumber(
-                          status?.tasks
-                            ? Object.values(status.tasks).filter((t) => t.enabled)
-                                .length
-                            : 0
+                          taskSchedules.filter((t) => t.enabled).length
                         )}
                       </div>
                     </div>

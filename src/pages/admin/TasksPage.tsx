@@ -744,14 +744,15 @@ export default function TasksPage() {
   )
 
   const tasksQuery = useAdminTasks(params)
-  const tasks = useMemo(
-    () => tasksQuery.data?.data ?? [],
-    [tasksQuery.data?.data]
-  )
+  const tasks = useMemo(() => {
+    const data = tasksQuery.data?.data
+    return Array.isArray(data) ? data : []
+  }, [tasksQuery.data?.data])
   const pagination = tasksQuery.data?.pagination
 
   const typeOptions = useMemo<TaskTypeOption[]>(() => {
-    const apiTypes = taskTypesQuery.data?.data ?? []
+    const apiData = taskTypesQuery.data?.data
+    const apiTypes = Array.isArray(apiData) ? apiData : []
     const normalizedTypes = apiTypes.map((type) => ({
       ...type,
       schema: type.schema ?? emptySchema,
