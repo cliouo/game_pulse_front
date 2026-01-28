@@ -63,6 +63,9 @@ export function TaskFormFields({
   const uiSchema = selectedTypeOption?.ui_schema ?? emptyUiSchema
   const parametersDisabled = disabled || (mode === "create" && !selectedType)
 
+  // 调试日志
+  console.log(`[TaskFormFields] render, mode=${mode}, selectedType=${selectedType}`)
+
   return (
     <div className="grid gap-4">
       <div className="grid gap-3 sm:grid-cols-2">

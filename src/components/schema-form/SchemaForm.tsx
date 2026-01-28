@@ -106,12 +106,21 @@ export default function SchemaForm({
   className,
   nested = false,
 }: SchemaFormProps) {
+  const instanceId = React.useRef(Math.random().toString(36).slice(2, 8))
   const [errors, setErrors] = React.useState<Record<string, string[]>>({})
   const [touched, setTouched] = React.useState<Record<string, boolean>>({})
   const fields = React.useMemo(
     () => getFieldEntries(schema, uiSchema),
     [schema, uiSchema]
   )
+
+  // 调试日志：组件生命周期
+  React.useEffect(() => {
+    console.log(`[SchemaForm ${instanceId.current}] MOUNTED, nested=${nested}`)
+    return () => {
+      console.log(`[SchemaForm ${instanceId.current}] UNMOUNTING`)
+    }
+  }, [nested])
   const groups = React.useMemo(() => {
     const groupConfigs =
       schema["x-groups"] && typeof schema["x-groups"] === "object"
@@ -198,6 +207,7 @@ export default function SchemaForm({
   const schemaRef = React.useRef(schema)
   React.useEffect(() => {
     if (schemaRef.current !== schema) {
+      console.log(`[SchemaForm ${instanceId.current}] Schema changed`)
       schemaRef.current = schema
       setErrors({})
       setTouched({})
