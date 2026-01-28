@@ -78,9 +78,12 @@ export default function RankingTable({
                       <Skeleton className="h-5 w-12" />
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-40" />
-                        <Skeleton className="h-3 w-24" />
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-12 w-20 flex-shrink-0 rounded" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-40" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
@@ -102,36 +105,49 @@ export default function RankingTable({
                           <RankBadge rank={record.rank_order} />
                         </TableCell>
                         <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              {steamUrl ? (
-                                <a
-                                  href={steamUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-sm font-medium text-foreground transition hover:text-primary"
-                                >
-                                  {record.name}
-                                </a>
-                              ) : (
-                                <span className="text-sm font-medium">
-                                  {record.name}
-                                </span>
-                              )}
-                              {steamUrl ? (
-                                <a
-                                  href={steamUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-muted-foreground transition hover:text-foreground"
-                                  aria-label={`打开 ${record.name} Steam 商店`}
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                </a>
-                              ) : null}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              App ID: {record.app_id}
+                          <div className="flex items-center gap-3">
+                            {record.header_image && (
+                              <img
+                                src={record.header_image}
+                                alt={record.name}
+                                className="h-12 w-20 flex-shrink-0 rounded border border-border/50 object-cover"
+                                onError={(e) => {
+                                  // 加载失败时隐藏图片
+                                  e.currentTarget.style.display = 'none'
+                                }}
+                              />
+                            )}
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center gap-2">
+                                {steamUrl ? (
+                                  <a
+                                    href={steamUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-sm font-medium text-foreground transition hover:text-primary"
+                                  >
+                                    {record.name}
+                                  </a>
+                                ) : (
+                                  <span className="text-sm font-medium">
+                                    {record.name}
+                                  </span>
+                                )}
+                                {steamUrl ? (
+                                  <a
+                                    href={steamUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-muted-foreground transition hover:text-foreground"
+                                    aria-label={`打开 ${record.name} Steam 商店`}
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </a>
+                                ) : null}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                App ID: {record.app_id}
+                              </div>
                             </div>
                           </div>
                         </TableCell>

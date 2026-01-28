@@ -71,6 +71,7 @@ export interface RankingRecord {
   id: number;
   app_id: number;
   name: string;
+  header_image?: string;
   rank_order: number;
   record_time: string;
   created_at: string;
