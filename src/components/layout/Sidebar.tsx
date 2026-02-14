@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom"
 import {
+  Database,
   Gamepad2,
   LayoutDashboard,
   PanelLeftClose,
@@ -46,6 +47,11 @@ const navItems = [
     label: "市场机会",
     href: "/market",
     icon: Target,
+  },
+  {
+    label: "SteamDB",
+    href: "/steamdb",
+    icon: Database,
   },
 ]
 

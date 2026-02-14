@@ -290,3 +290,27 @@ export interface AdminTasksQueryParams {
   enabled?: boolean;
   priority?: string;
 }
+
+// SteamDB 元数据类型
+export interface SteamTagInfo {
+  tag_name: string;
+  votes: number;
+}
+
+export interface SteamMostFollowedInfo {
+  app_id: number;
+  name: string;
+  rank: number;
+  follower_count: number;
+  recorded_at: number;
+}
+
+export interface SteamSaleInfo {
+  app_id: number;
+  name: string;
+  original_price: number;
+  sale_price: number;
+  discount_percent: number;
+  currency: string;
+  detected_at: number;
+}
