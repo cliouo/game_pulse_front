@@ -1,14 +1,19 @@
-import { type ReactNode } from "react"
+import { type ReactNode, useMemo, useState } from "react"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import {
+  Apple,
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
   ExternalLink,
   Globe,
   Heart,
   Medal,
+  Monitor,
   Star,
   Tag,
+  Terminal,
   TrendingUp,
   Trophy,
   Users,
@@ -69,6 +74,51 @@ const formatChartDate = (timestamp: number) =>
 
 const getDiscountedPrice = (price: number, discountPercent: number) =>
   price * (1 - discountPercent / 100)
+
+const getMetacriticBadgeStyle = (score: number) => {
+  if (score >= 75) {
+    return "bg-emerald-500/15 text-emerald-400"
+  }
+  if (score >= 50) {
+    return "bg-amber-500/15 text-amber-400"
+  }
+  return "bg-rose-500/15 text-rose-400"
+}
+
+const getProtonDBBadgeStyle = (tier?: string) => {
+  switch (tier?.toLowerCase()) {
+    case "platinum":
+      return "bg-emerald-500/15 text-emerald-400"
+    case "gold":
+      return "bg-amber-500/15 text-amber-400"
+    case "silver":
+      return "bg-slate-500/15 text-slate-300"
+    case "bronze":
+      return "bg-orange-500/15 text-orange-400"
+    case "borked":
+      return "bg-rose-500/15 text-rose-400"
+    default:
+      return "bg-secondary/70 text-secondary-foreground"
+  }
+}
+
+const formatTier = (tier: string) =>
+  tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase()
+
+const stripHTML = (value: string) =>
+  value.replace(/<[^>]*>/g, " ").replaceAll("&nbsp;", " ").replace(/\s+/g, " ").trim()
+
+type PlatformPayload = {
+  windows?: boolean
+  mac?: boolean
+  linux?: boolean
+}
+
+type ScreenshotPayload = {
+  id?: number
+  path_thumbnail?: string
+  path_full?: string
+}
 
 type ChartDatum = {
   date: number
@@ -201,6 +251,75 @@ export default function GameDetail() {
   const playerHistoryData = playerHistoryQuery.data?.data ?? []
   const priceHistoryData = priceHistoryQuery.data?.data ?? []
   const followerHistoryData = followerHistoryQuery.data?.data ?? []
+  const [isAboutExpanded, setIsAboutExpanded] = useState(false)
+
+  const platforms = useMemo<PlatformPayload | null>(() => {
+    if (!game?.platforms) {
+      return null
+    }
+    try {
+      const parsed = JSON.parse(game.platforms) as PlatformPayload
+      return {
+        windows: Boolean(parsed.windows),
+        mac: Boolean(parsed.mac),
+        linux: Boolean(parsed.linux),
+      }
+    } catch {
+      return null
+    }
+  }, [game?.platforms])
+
+  const screenshots = useMemo<ScreenshotPayload[]>(() => {
+    if (!game?.screenshots_json) {
+      return []
+    }
+    try {
+      const parsed = JSON.parse(game.screenshots_json) as unknown
+      if (!Array.isArray(parsed)) {
+        return []
+      }
+      return parsed
+        .map((item) => {
+          if (!item || typeof item !== "object") {
+            return null
+          }
+          const screenshotItem = item as Record<string, unknown>
+          return {
+            id: typeof screenshotItem.id === "number" ? screenshotItem.id : undefined,
+            path_thumbnail:
+              typeof screenshotItem.path_thumbnail === "string"
+                ? screenshotItem.path_thumbnail
+                : undefined,
+            path_full:
+              typeof screenshotItem.path_full === "string"
+                ? screenshotItem.path_full
+                : undefined,
+          }
+        })
+        .filter((item): item is ScreenshotPayload =>
+          Boolean(item && (item.path_thumbnail || item.path_full)),
+        )
+    } catch {
+      return []
+    }
+  }, [game?.screenshots_json])
+
+  const supportedLanguages = useMemo(() => {
+    if (!game?.supported_languages) {
+      return []
+    }
+    return game.supported_languages
+      .split(/[,\n|，]/)
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0)
+  }, [game?.supported_languages])
+
+  const aboutText = useMemo(() => {
+    if (!game?.about_the_game) {
+      return ""
+    }
+    return stripHTML(game.about_the_game)
+  }, [game?.about_the_game])
 
   const steamStoreUrl = appId
     ? `https://store.steampowered.com/app/${appId}`
@@ -334,6 +453,28 @@ export default function GameDetail() {
           >
             {game.coming_soon ? "即将发售" : "已发售"}
           </Badge>
+          {game.protondb_tier ? (
+            <Badge
+              variant="secondary"
+              className={cn(
+                "border border-transparent",
+                getProtonDBBadgeStyle(game.protondb_tier),
+              )}
+            >
+              ProtonDB {formatTier(game.protondb_tier)}
+            </Badge>
+          ) : null}
+          {typeof game.metacritic_score === "number" ? (
+            <Badge
+              variant="secondary"
+              className={cn(
+                "border border-transparent",
+                getMetacriticBadgeStyle(game.metacritic_score),
+              )}
+            >
+              Metacritic {game.metacritic_score}
+            </Badge>
+          ) : null}
           {game.store_url && steamStoreUrl ? (
             <Button asChild variant="outline" size="sm">
               <a href={steamStoreUrl} target="_blank" rel="noreferrer">
@@ -385,6 +526,32 @@ export default function GameDetail() {
               <div className="rounded-lg border border-border/60 bg-muted/20 p-3 sm:col-span-2">
                 <p className="text-xs text-muted-foreground">分类</p>
                 <p className="mt-1 text-sm font-medium">{game.categories || "--"}</p>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-3 sm:col-span-2">
+                <p className="text-xs text-muted-foreground">平台支持</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {platforms?.windows ? (
+                    <Badge variant="secondary" className="gap-1 border border-border/60 bg-secondary/70">
+                      <Monitor className="h-3.5 w-3.5" />
+                      Windows
+                    </Badge>
+                  ) : null}
+                  {platforms?.mac ? (
+                    <Badge variant="secondary" className="gap-1 border border-border/60 bg-secondary/70">
+                      <Apple className="h-3.5 w-3.5" />
+                      macOS
+                    </Badge>
+                  ) : null}
+                  {platforms?.linux ? (
+                    <Badge variant="secondary" className="gap-1 border border-border/60 bg-secondary/70">
+                      <Terminal className="h-3.5 w-3.5" />
+                      Linux
+                    </Badge>
+                  ) : null}
+                  {!platforms?.windows && !platforms?.mac && !platforms?.linux ? (
+                    <span className="text-sm font-medium text-muted-foreground">--</span>
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -449,6 +616,94 @@ export default function GameDetail() {
                 {game.short_description || "暂无简介"}
               </p>
             </div>
+
+            {supportedLanguages.length > 0 ? (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">支持语言</p>
+                  <div className="flex flex-wrap gap-2">
+                    {supportedLanguages.map((language, index) => (
+                      <Badge
+                        key={`supported-language-${language}-${index}`}
+                        variant="secondary"
+                        className="border border-border/60 bg-secondary/70"
+                      >
+                        {language}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {aboutText ? (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">关于游戏</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {isAboutExpanded || aboutText.length <= 420
+                      ? aboutText
+                      : `${aboutText.slice(0, 420)}...`}
+                  </p>
+                  {aboutText.length > 420 ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsAboutExpanded((prev) => !prev)}
+                      className="h-8 px-2 text-xs text-muted-foreground"
+                    >
+                      {isAboutExpanded ? (
+                        <>
+                          收起
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </>
+                      ) : (
+                        <>
+                          展开更多
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </>
+                      )}
+                    </Button>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
+
+            {screenshots.length > 0 ? (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-foreground">游戏截图</p>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {screenshots.map((screenshot, index) => {
+                      const imageUrl = screenshot.path_thumbnail ?? screenshot.path_full
+                      const fullImageUrl = screenshot.path_full ?? screenshot.path_thumbnail
+                      if (!imageUrl) {
+                        return null
+                      }
+                      return (
+                        <a
+                          key={`screenshot-${screenshot.id ?? index}`}
+                          href={fullImageUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="overflow-hidden rounded-md border border-border/60 bg-muted/20 transition hover:border-primary/40"
+                        >
+                          <img
+                            src={imageUrl}
+                            alt={`${game.name} screenshot ${index + 1}`}
+                            className="aspect-video h-full w-full object-cover"
+                          />
+                        </a>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : null}
           </CardContent>
         </Card>
 

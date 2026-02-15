@@ -16,6 +16,27 @@ export function useMostFollowed(page: number = 1, pageSize: number = 20) {
   });
 }
 
+export function useTopRated(page: number = 1, pageSize: number = 20) {
+  return useQuery({
+    queryKey: ['steam-metadata-top-rated', page, pageSize],
+    queryFn: () => steamMetadataApi.getTopRated({ page, page_size: pageSize }),
+  });
+}
+
+export function useMostWishlisted(page: number = 1, pageSize: number = 20) {
+  return useQuery({
+    queryKey: ['steam-metadata-most-wishlisted', page, pageSize],
+    queryFn: () => steamMetadataApi.getMostWishlisted({ page, page_size: pageSize }),
+  });
+}
+
+export function useMostPlayed(page: number = 1, pageSize: number = 20) {
+  return useQuery({
+    queryKey: ['steam-metadata-most-played', page, pageSize],
+    queryFn: () => steamMetadataApi.getMostPlayed({ page, page_size: pageSize }),
+  });
+}
+
 export function useCurrentSales(page: number = 1, pageSize: number = 20) {
   return useQuery({
     queryKey: ['steam-metadata-sales', page, pageSize],

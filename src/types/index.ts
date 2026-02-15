@@ -305,6 +305,32 @@ export interface SteamMostFollowedInfo {
   recorded_at: number;
 }
 
+export interface SteamTopRatedInfo {
+  app_id: number;
+  name: string;
+  rank: number;
+  rating: number;
+  votes: number;
+  recorded_at: number;
+}
+
+export interface SteamMostWishlistedInfo {
+  app_id: number;
+  name: string;
+  rank: number;
+  wishlist_count: number;
+  recorded_at: number;
+}
+
+export interface SteamMostPlayedInfo {
+  app_id: number;
+  name: string;
+  rank: number;
+  current_players: number;
+  peak_today: number;
+  recorded_at: number;
+}
+
 export interface SteamSaleInfo {
   app_id: number;
   name: string;
@@ -313,6 +339,81 @@ export interface SteamSaleInfo {
   discount_percent: number;
   currency: string;
   detected_at: number;
+}
+
+export interface SteamNewsItem {
+  id: number;
+  app_id: number;
+  gid: string;
+  title: string;
+  url: string;
+  author: string;
+  contents: string;
+  feed_label: string;
+  feed_name: string;
+  published_at: number;
+}
+
+export interface SteamReviewItem {
+  id: number;
+  app_id: number;
+  recommendation_id: string;
+  author_steam_id: string;
+  playtime_forever: number;
+  voted_up: boolean;
+  votes_up: number;
+  votes_funny: number;
+  language: string;
+  review_text: string;
+  review_created_at: number;
+}
+
+export interface SteamSpyInfo {
+  id: number;
+  app_id: number;
+  owners_min: number;
+  owners_max: number;
+  average_playtime: number;
+  median_playtime: number;
+  ccu: number;
+  score_rank: string;
+  positive: number;
+  negative: number;
+  collected_at: number;
+}
+
+export interface IGDBGameInfo {
+  app_id: number;
+  igdb_id: number;
+  aggregated_rating?: number;
+  rating?: number;
+  similar_games_json?: string;
+  genres_json?: string;
+  themes_json?: string;
+  cover_url?: string;
+}
+
+export interface GameDealInfo {
+  id: number;
+  app_id: number;
+  store: string;
+  current_price: number;
+  regular_price: number;
+  currency: string;
+  discount_percent: number;
+  historical_low: number;
+  historical_low_at?: number;
+  url: string;
+  collected_at: number;
+}
+
+export interface HLTBInfo {
+  app_id: number;
+  hltb_id: number;
+  main_story_hours?: number;
+  main_extra_hours?: number;
+  completionist_hours?: number;
+  all_styles_hours?: number;
 }
 
 // Steam History 类型
@@ -366,6 +467,18 @@ export interface GameDetail {
   dlc_count: number | null;
   achievement_count: number | null;
   steamdb_synced: boolean;
+  platforms?: string;
+  metacritic_score?: number;
+  metacritic_url?: string;
+  screenshots_json?: string;
+  movies_json?: string;
+  supported_languages?: string;
+  required_age?: number;
+  about_the_game?: string;
+  pc_requirements?: string;
+  recommendations?: number;
+  protondb_tier?: string;
+  protondb_score?: number;
   created_at: number;
 }
 

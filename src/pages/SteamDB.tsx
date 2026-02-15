@@ -20,7 +20,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useCurrentSales, useGameTags, useMostFollowed } from "@/hooks/use-steam-metadata"
+import {
+  useCurrentSales,
+  useGameTags,
+  useMostFollowed,
+  useMostPlayed,
+  useMostWishlisted,
+  useTopRated,
+} from "@/hooks/use-steam-metadata"
 import { cn } from "@/lib/utils"
 
 const numberFormatter = new Intl.NumberFormat("zh-CN")
@@ -42,6 +49,13 @@ const formatNumber = (value?: number) => {
     return "--"
   }
   return numberFormatter.format(value)
+}
+
+const formatRatingPercent = (value?: number) => {
+  if (typeof value !== "number") {
+    return "--"
+  }
+  return `${(value * 100).toFixed(2)}%`
 }
 
 const formatPrice = (value?: number, currency = "CNY") => {
@@ -90,6 +104,15 @@ export default function SteamDB() {
   const [mostFollowedPage, setMostFollowedPage] = useState(1)
   const [mostFollowedPageSize, setMostFollowedPageSize] = useState(20)
 
+  const [topRatedPage, setTopRatedPage] = useState(1)
+  const [topRatedPageSize, setTopRatedPageSize] = useState(20)
+
+  const [mostWishlistedPage, setMostWishlistedPage] = useState(1)
+  const [mostWishlistedPageSize, setMostWishlistedPageSize] = useState(20)
+
+  const [mostPlayedPage, setMostPlayedPage] = useState(1)
+  const [mostPlayedPageSize, setMostPlayedPageSize] = useState(20)
+
   const [salesPage, setSalesPage] = useState(1)
   const [salesPageSize, setSalesPageSize] = useState(20)
 
@@ -98,11 +121,23 @@ export default function SteamDB() {
   const [tagError, setTagError] = useState("")
 
   const mostFollowedQuery = useMostFollowed(mostFollowedPage, mostFollowedPageSize)
+  const topRatedQuery = useTopRated(topRatedPage, topRatedPageSize)
+  const mostWishlistedQuery = useMostWishlisted(mostWishlistedPage, mostWishlistedPageSize)
+  const mostPlayedQuery = useMostPlayed(mostPlayedPage, mostPlayedPageSize)
   const salesQuery = useCurrentSales(salesPage, salesPageSize)
   const tagsQuery = useGameTags(searchAppId)
 
   const mostFollowedRecords = mostFollowedQuery.data?.data ?? []
   const mostFollowedTotal = mostFollowedQuery.data?.pagination.total ?? 0
+
+  const topRatedRecords = topRatedQuery.data?.data ?? []
+  const topRatedTotal = topRatedQuery.data?.pagination.total ?? 0
+
+  const mostWishlistedRecords = mostWishlistedQuery.data?.data ?? []
+  const mostWishlistedTotal = mostWishlistedQuery.data?.pagination.total ?? 0
+
+  const mostPlayedRecords = mostPlayedQuery.data?.data ?? []
+  const mostPlayedTotal = mostPlayedQuery.data?.pagination.total ?? 0
 
   const salesRecords = salesQuery.data?.data ?? []
   const salesTotal = salesQuery.data?.pagination.total ?? 0
@@ -111,12 +146,21 @@ export default function SteamDB() {
 
   const subtitleLoading =
     (activeTab === "mostfollowed" && mostFollowedQuery.isLoading) ||
+    (activeTab === "toprated" && topRatedQuery.isLoading) ||
+    (activeTab === "mostwishlisted" && mostWishlistedQuery.isLoading) ||
+    (activeTab === "mostplayed" && mostPlayedQuery.isLoading) ||
     (activeTab === "sales" && salesQuery.isLoading) ||
     (activeTab === "tags" && searchAppId !== null && tagsQuery.isLoading)
 
   const subtitle =
     activeTab === "mostfollowed"
       ? `数据记录时间: ${formatTimestamp(mostFollowedRecords[0]?.recorded_at)}`
+      : activeTab === "toprated"
+        ? `数据记录时间: ${formatTimestamp(topRatedRecords[0]?.recorded_at)}`
+        : activeTab === "mostwishlisted"
+          ? `数据记录时间: ${formatTimestamp(mostWishlistedRecords[0]?.recorded_at)}`
+          : activeTab === "mostplayed"
+            ? `数据记录时间: ${formatTimestamp(mostPlayedRecords[0]?.recorded_at)}`
       : activeTab === "sales"
         ? `数据检测时间: ${formatTimestamp(salesRecords[0]?.detected_at)}`
         : searchAppId === null
@@ -155,6 +199,9 @@ export default function SteamDB() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="mostfollowed">最多关注</TabsTrigger>
+          <TabsTrigger value="toprated">最高评分</TabsTrigger>
+          <TabsTrigger value="mostwishlisted">最多愿望单</TabsTrigger>
+          <TabsTrigger value="mostplayed">最多游玩</TabsTrigger>
           <TabsTrigger value="sales">当前促销</TabsTrigger>
           <TabsTrigger value="tags">游戏标签</TabsTrigger>
         </TabsList>
@@ -255,6 +302,303 @@ export default function SteamDB() {
             onPageSizeChange={(value) => {
               setMostFollowedPageSize(value)
               setMostFollowedPage(1)
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="toprated" className="space-y-4">
+          <Card className="border-border/60 bg-card/60 shadow-sm">
+            <CardContent className="pt-4">
+              <Table className="min-w-[760px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead>游戏</TableHead>
+                    <TableHead className="w-[160px]">评分</TableHead>
+                    <TableHead className="w-[160px]">评分票数</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {topRatedQuery.isLoading
+                    ? skeletonRows.map((_, index) => (
+                        <TableRow key={`top-rated-loading-${index}`}>
+                          <TableCell>
+                            <Skeleton className="h-5 w-14" />
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-44" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-20" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : topRatedRecords.length > 0
+                      ? topRatedRecords.map((record) => {
+                          const steamUrl = `https://store.steampowered.com/app/${record.app_id}`
+                          return (
+                            <TableRow
+                              key={`top-rated-${record.app_id}-${record.rank}`}
+                              className={cn(getRowClassName(record.rank))}
+                            >
+                              <TableCell>
+                                <RankBadge rank={record.rank} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <Link
+                                      to={`/games/app/${record.app_id}`}
+                                      className="font-medium text-foreground transition hover:text-primary"
+                                    >
+                                      {record.name}
+                                    </Link>
+                                    <a
+                                      href={steamUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-muted-foreground transition hover:text-foreground"
+                                      aria-label={`打开 ${record.name} Steam 商店`}
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                    </a>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    App ID: {record.app_id}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-semibold">
+                                {formatRatingPercent(record.rating)}
+                              </TableCell>
+                              <TableCell>{formatNumber(record.votes)}</TableCell>
+                            </TableRow>
+                          )
+                        })
+                      : (
+                          <TableRow>
+                            <TableCell
+                              colSpan={4}
+                              className="py-6 text-center text-sm text-muted-foreground"
+                            >
+                              暂无数据
+                            </TableCell>
+                          </TableRow>
+                        )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Pagination
+            page={topRatedPage}
+            pageSize={topRatedPageSize}
+            total={topRatedTotal}
+            onPageChange={setTopRatedPage}
+            onPageSizeChange={(value) => {
+              setTopRatedPageSize(value)
+              setTopRatedPage(1)
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="mostwishlisted" className="space-y-4">
+          <Card className="border-border/60 bg-card/60 shadow-sm">
+            <CardContent className="pt-4">
+              <Table className="min-w-[720px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead>游戏</TableHead>
+                    <TableHead className="w-[180px]">愿望单数</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mostWishlistedQuery.isLoading
+                    ? skeletonRows.map((_, index) => (
+                        <TableRow key={`most-wishlisted-loading-${index}`}>
+                          <TableCell>
+                            <Skeleton className="h-5 w-14" />
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-44" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-20" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : mostWishlistedRecords.length > 0
+                      ? mostWishlistedRecords.map((record) => {
+                          const steamUrl = `https://store.steampowered.com/app/${record.app_id}`
+                          return (
+                            <TableRow
+                              key={`most-wishlisted-${record.app_id}-${record.rank}`}
+                              className={cn(getRowClassName(record.rank))}
+                            >
+                              <TableCell>
+                                <RankBadge rank={record.rank} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <Link
+                                      to={`/games/app/${record.app_id}`}
+                                      className="font-medium text-foreground transition hover:text-primary"
+                                    >
+                                      {record.name}
+                                    </Link>
+                                    <a
+                                      href={steamUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-muted-foreground transition hover:text-foreground"
+                                      aria-label={`打开 ${record.name} Steam 商店`}
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                    </a>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    App ID: {record.app_id}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>{formatNumber(record.wishlist_count)}</TableCell>
+                            </TableRow>
+                          )
+                        })
+                      : (
+                          <TableRow>
+                            <TableCell
+                              colSpan={3}
+                              className="py-6 text-center text-sm text-muted-foreground"
+                            >
+                              暂无数据
+                            </TableCell>
+                          </TableRow>
+                        )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Pagination
+            page={mostWishlistedPage}
+            pageSize={mostWishlistedPageSize}
+            total={mostWishlistedTotal}
+            onPageChange={setMostWishlistedPage}
+            onPageSizeChange={(value) => {
+              setMostWishlistedPageSize(value)
+              setMostWishlistedPage(1)
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="mostplayed" className="space-y-4">
+          <Card className="border-border/60 bg-card/60 shadow-sm">
+            <CardContent className="pt-4">
+              <Table className="min-w-[760px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead>游戏</TableHead>
+                    <TableHead className="w-[180px]">当前在线</TableHead>
+                    <TableHead className="w-[180px]">今日峰值</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mostPlayedQuery.isLoading
+                    ? skeletonRows.map((_, index) => (
+                        <TableRow key={`most-played-loading-${index}`}>
+                          <TableCell>
+                            <Skeleton className="h-5 w-14" />
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-44" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-20" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : mostPlayedRecords.length > 0
+                      ? mostPlayedRecords.map((record) => {
+                          const steamUrl = `https://store.steampowered.com/app/${record.app_id}`
+                          return (
+                            <TableRow
+                              key={`most-played-${record.app_id}-${record.rank}`}
+                              className={cn(getRowClassName(record.rank))}
+                            >
+                              <TableCell>
+                                <RankBadge rank={record.rank} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <Link
+                                      to={`/games/app/${record.app_id}`}
+                                      className="font-medium text-foreground transition hover:text-primary"
+                                    >
+                                      {record.name}
+                                    </Link>
+                                    <a
+                                      href={steamUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-muted-foreground transition hover:text-foreground"
+                                      aria-label={`打开 ${record.name} Steam 商店`}
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                    </a>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    App ID: {record.app_id}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>{formatNumber(record.current_players)}</TableCell>
+                              <TableCell>{formatNumber(record.peak_today)}</TableCell>
+                            </TableRow>
+                          )
+                        })
+                      : (
+                          <TableRow>
+                            <TableCell
+                              colSpan={4}
+                              className="py-6 text-center text-sm text-muted-foreground"
+                            >
+                              暂无数据
+                            </TableCell>
+                          </TableRow>
+                        )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Pagination
+            page={mostPlayedPage}
+            pageSize={mostPlayedPageSize}
+            total={mostPlayedTotal}
+            onPageChange={setMostPlayedPage}
+            onPageSizeChange={(value) => {
+              setMostPlayedPageSize(value)
+              setMostPlayedPage(1)
             }}
           />
         </TabsContent>
