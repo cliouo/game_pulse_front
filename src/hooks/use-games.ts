@@ -23,3 +23,19 @@ export function useGameById(id: number) {
     queryFn: () => gamesApi.getGameById(id),
   });
 }
+
+export function useGameDetail(id: number | null) {
+  return useQuery({
+    queryKey: ['game-detail', id],
+    queryFn: () => gamesApi.getGameDetail(id!),
+    enabled: id !== null && id > 0,
+  });
+}
+
+export function useLatestStats(appId: number | null) {
+  return useQuery({
+    queryKey: ['latest-stats', appId],
+    queryFn: () => gamesApi.getLatestStatsByAppId(appId!),
+    enabled: appId !== null && appId > 0,
+  });
+}

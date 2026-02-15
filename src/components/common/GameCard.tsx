@@ -1,4 +1,5 @@
 import { ExternalLink, Heart, Users } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import Magnet from "@/components/react-bits/Magnet"
 import { Badge } from "@/components/ui/badge"
@@ -216,7 +217,7 @@ export default function GameCard({
                 ) : null}
                 {detailUrl ? (
                   <Button asChild size="sm" variant="outline">
-                    <a href={detailUrl}>详情</a>
+                    <Link to={detailUrl}>详情</Link>
                   </Button>
                 ) : null}
               </div>
@@ -324,7 +325,7 @@ export default function GameCard({
               ) : null}
               {detailUrl ? (
                 <Button asChild size="sm" variant="outline">
-                  <a href={detailUrl}>详情</a>
+                  <Link to={detailUrl}>详情</Link>
                 </Button>
               ) : null}
             </div>

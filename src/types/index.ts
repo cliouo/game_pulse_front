@@ -314,3 +314,78 @@ export interface SteamSaleInfo {
   currency: string;
   detected_at: number;
 }
+
+// Steam History 类型
+export interface PlayerHistoryPoint {
+  player_count: number;
+  recorded_at: number;
+}
+
+export interface PriceHistoryPoint {
+  price: number;
+  discount_percent: number;
+  currency: string;
+  recorded_at: number;
+}
+
+export interface FollowerHistoryPoint {
+  follower_count: number;
+  recorded_at: number;
+}
+
+export interface HistoryQueryParams {
+  page?: number;
+  page_size?: number;
+  start_time?: string;
+  end_time?: string;
+}
+
+// 游戏详情（增强版，包含 SteamDB 字段）
+export interface GameDetail {
+  id: number;
+  app_id: number;
+  name: string;
+  type: string;
+  header_image: string;
+  alias: string;
+  short_description: string;
+  developers: string;
+  publishers: string;
+  release_date: string;
+  is_free: boolean;
+  coming_soon: boolean;
+  status: number;
+  store_url: string;
+  offcial_website: string;
+  categories: string;
+  keywords: string;
+  support_info: string;
+  follower_count: number | null;
+  follower_peak: number | null;
+  player_peak: number | null;
+  dlc_count: number | null;
+  achievement_count: number | null;
+  steamdb_synced: boolean;
+  created_at: number;
+}
+
+// 最新统计数据
+export interface StatsDetail {
+  id: number;
+  game_id: number;
+  game_name: string;
+  app_id: number;
+  followers: number;
+  current_players: number;
+  review_score: number;
+  review_score_desc: string;
+  review_count: number;
+  review_positive: number;
+  review_negative: number;
+  price: number;
+  discount_percent: number;
+  wishlist_rank: number;
+  selling_rank: number;
+  collected_at: number;
+  collection_period: string;
+}

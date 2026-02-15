@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { ExternalLink, LayoutGrid, List, Search } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import GameCard from "@/components/common/GameCard"
 import Pagination from "@/components/common/Pagination"
@@ -283,6 +284,7 @@ export default function Games() {
                     currentPlayers={game.current_players}
                     comingSoon={game.coming_soon}
                     storeUrl={game.store_url}
+                    detailUrl={`/games/${game.id}`}
                     layout="grid"
                   />
                 ))
@@ -372,20 +374,12 @@ export default function Games() {
                             <TableCell>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  {game.store_url ? (
-                                    <a
-                                      href={game.store_url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="font-medium text-foreground transition hover:text-primary"
-                                    >
-                                      {game.name}
-                                    </a>
-                                  ) : (
-                                    <span className="font-medium">
-                                      {game.name}
-                                    </span>
-                                  )}
+                                  <Link
+                                    to={`/games/${game.id}`}
+                                    className="font-medium text-foreground transition hover:text-primary"
+                                  >
+                                    {game.name}
+                                  </Link>
                                   {game.store_url ? (
                                     <a
                                       href={game.store_url}

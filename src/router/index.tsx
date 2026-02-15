@@ -3,6 +3,7 @@ import type { RouteObject } from "react-router-dom"
 import AdminLayout from "@/components/layout/AdminLayout"
 import MainLayout from "@/components/layout/MainLayout"
 import Dashboard from "@/pages/Dashboard"
+import GameDetail from "@/pages/GameDetail"
 import Games from "@/pages/Games"
 import MarketOpportunities from "@/pages/MarketOpportunities"
 import PotentialGames from "@/pages/PotentialGames"
@@ -19,6 +20,7 @@ export const routes: RouteObject[] = [
       { index: true, element: <Dashboard /> },
       { path: "rankings", element: <Rankings /> },
       { path: "games", element: <Games /> },
+      { path: "games/:id", element: <GameDetail /> },
       { path: "potential", element: <PotentialGames /> },
       { path: "market", element: <MarketOpportunities /> },
       { path: "steamdb", element: <SteamDB /> },
