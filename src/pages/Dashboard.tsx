@@ -6,7 +6,9 @@ import RiskPieChart from "@/components/charts/RiskPieChart"
 import { BlurText } from "@/components/ui/blur-text"
 import StatCard from "@/components/common/StatCard"
 import HotGamesPreview from "@/components/dashboard/HotGamesPreview"
+import MostFollowedPreview from "@/components/dashboard/MostFollowedPreview"
 import QuickLinks from "@/components/dashboard/QuickLinks"
+import SalesPreview from "@/components/dashboard/SalesPreview"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -148,6 +150,11 @@ export default function Dashboard() {
       </div>
 
       <HotGamesPreview />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <SalesPreview />
+        <MostFollowedPreview />
+      </div>
     </div>
   )
 }

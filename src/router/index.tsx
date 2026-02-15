@@ -20,7 +20,7 @@ export const routes: RouteObject[] = [
       { index: true, element: <Dashboard /> },
       { path: "rankings", element: <Rankings /> },
       { path: "games", element: <Games /> },
-      { path: "games/:id", element: <GameDetail /> },
+      { path: "games/app/:appId", element: <GameDetail /> },
       { path: "potential", element: <PotentialGames /> },
       { path: "market", element: <MarketOpportunities /> },
       { path: "steamdb", element: <SteamDB /> },

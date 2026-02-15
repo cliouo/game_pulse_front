@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react"
 import { format, isValid, parseISO } from "date-fns"
 import { zhCN } from "date-fns/locale"
+import { Link } from "react-router-dom"
 
 import RankBadge from "@/components/rankings/RankBadge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -112,27 +113,18 @@ export default function RankingTable({
                                 alt={record.name}
                                 className="h-12 w-20 flex-shrink-0 rounded border border-border/50 object-cover"
                                 onError={(e) => {
-                                  // 加载失败时隐藏图片
                                   e.currentTarget.style.display = 'none'
                                 }}
                               />
                             )}
                             <div className="flex-1 space-y-1">
                               <div className="flex items-center gap-2">
-                                {steamUrl ? (
-                                  <a
-                                    href={steamUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-sm font-medium text-foreground transition hover:text-primary"
-                                  >
-                                    {record.name}
-                                  </a>
-                                ) : (
-                                  <span className="text-sm font-medium">
-                                    {record.name}
-                                  </span>
-                                )}
+                                <Link
+                                  to={`/games/app/${record.app_id}`}
+                                  className="text-sm font-medium text-foreground transition hover:text-primary"
+                                >
+                                  {record.name}
+                                </Link>
                                 {steamUrl ? (
                                   <a
                                     href={steamUrl}
@@ -147,7 +139,6 @@ export default function RankingTable({
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 App ID: {record.app_id}
-                              </div>
                             </div>
                           </div>
                         </TableCell>

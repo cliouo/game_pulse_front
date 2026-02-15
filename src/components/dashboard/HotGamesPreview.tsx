@@ -66,6 +66,7 @@ export default function HotGamesPreview({ className }: HotGamesPreviewProps) {
                 type={game.type}
                 headerImage={game.header_image}
                 storeUrl={game.store_url}
+                detailUrl={`/games/app/${game.app_id}`}
                 comingSoon={game.coming_soon}
                 className="w-full"
               />

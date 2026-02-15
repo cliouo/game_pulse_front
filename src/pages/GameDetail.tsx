@@ -32,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useGameDetail, useLatestStats } from "@/hooks/use-games"
+import { useGameByAppId, useLatestStats } from "@/hooks/use-games"
 import { usePlayerHistory, usePriceHistory, useFollowerHistory } from "@/hooks/use-steam-history"
 import { useGameTags } from "@/hooks/use-steam-metadata"
 import { cn } from "@/lib/utils"
@@ -179,18 +179,16 @@ function GameDetailSkeleton() {
 }
 
 export default function GameDetail() {
-  const { id } = useParams<{ id: string }>()
+  const { appId: appIdParam } = useParams<{ appId: string }>()
   const navigate = useNavigate()
 
-  const parsedGameId = id ? Number(id) : Number.NaN
+  const parsedGameId = appIdParam ? Number(appIdParam) : Number.NaN
   const isInvalidId =
-    !id || Number.isNaN(parsedGameId) || !Number.isInteger(parsedGameId) || parsedGameId <= 0
-  const gameId = isInvalidId ? null : parsedGameId
+    !appIdParam || Number.isNaN(parsedGameId) || !Number.isInteger(parsedGameId) || parsedGameId <= 0
+  const appId = isInvalidId ? null : parsedGameId
 
-  const gameQuery = useGameDetail(gameId)
+  const gameQuery = useGameByAppId(appId)
   const game = gameQuery.data?.data
-
-  const appId = game?.app_id ?? null
 
   const statsQuery = useLatestStats(appId)
   const tagsQuery = useGameTags(appId)
@@ -245,7 +243,7 @@ export default function GameDetail() {
         </Button>
         <Card className="border-border/60 bg-card/60 shadow-sm">
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            无效的游戏 ID
+            无效的 App ID
           </CardContent>
         </Card>
       </div>

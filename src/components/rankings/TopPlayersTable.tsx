@@ -1,4 +1,5 @@
 import { ExternalLink, Heart, Users } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import RankBadge from "@/components/rankings/RankBadge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -177,20 +178,12 @@ export default function TopPlayersTable({
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {steamUrl ? (
-                              <a
-                                href={steamUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="font-medium text-foreground transition hover:text-primary"
-                              >
-                                {record.game_name}
-                              </a>
-                            ) : (
-                              <span className="font-medium">
-                                {record.game_name}
-                              </span>
-                            )}
+                            <Link
+                              to={`/games/app/${record.app_id}`}
+                              className="font-medium text-foreground transition hover:text-primary"
+                            >
+                              {record.game_name}
+                            </Link>
                             {steamUrl ? (
                               <a
                                 href={steamUrl}

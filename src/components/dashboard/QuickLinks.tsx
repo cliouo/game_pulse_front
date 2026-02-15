@@ -1,4 +1,4 @@
-import { ArrowUpRight, Gamepad2, Target, TrendingUp, Trophy } from "lucide-react"
+import { ArrowUpRight, Database, Gamepad2, Target, TrendingUp, Trophy } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -59,6 +59,13 @@ const quickLinks: QuickLink[] = [
     to: "/market",
     icon: Target,
     tone: "warning",
+  },
+  {
+    title: "SteamDB",
+    description: "排行与促销",
+    to: "/steamdb",
+    icon: Database,
+    tone: "primary" as const,
   },
 ]
 

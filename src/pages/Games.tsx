@@ -284,7 +284,7 @@ export default function Games() {
                     currentPlayers={game.current_players}
                     comingSoon={game.coming_soon}
                     storeUrl={game.store_url}
-                    detailUrl={`/games/${game.id}`}
+                    detailUrl={`/games/app/${game.app_id}`}
                     layout="grid"
                   />
                 ))
@@ -375,7 +375,7 @@ export default function Games() {
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                   <Link
-                                    to={`/games/${game.id}`}
+                                    to={`/games/app/${game.app_id}`}
                                     className="font-medium text-foreground transition hover:text-primary"
                                   >
                                     {game.name}

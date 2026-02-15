@@ -39,3 +39,11 @@ export function useLatestStats(appId: number | null) {
     enabled: appId !== null && appId > 0,
   });
 }
+
+export function useGameByAppId(appId: number | null) {
+  return useQuery({
+    queryKey: ['game-by-appid', appId],
+    queryFn: () => gamesApi.getGameByAppId(appId!),
+    enabled: appId !== null && appId > 0,
+  });
+}

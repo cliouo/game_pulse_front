@@ -33,6 +33,11 @@ const gamesApi = {
     return response.data;
   },
 
+  async getGameByAppId(appId: number) {
+    const response = await apiClient.get<ApiResponse<GameDetail>>(`/games/app/${appId}`);
+    return response.data;
+  },
+
   async getLatestStatsByAppId(appId: number) {
     const response = await apiClient.get<ApiResponse<StatsDetail>>(
       `/steam-stats/app/${appId}/latest`,

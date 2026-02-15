@@ -2,6 +2,7 @@ import { type KeyboardEvent, useState } from "react"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { ExternalLink, Heart, Search, Tag } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import Pagination from "@/components/common/Pagination"
 import RankBadge from "@/components/rankings/RankBadge"
@@ -201,14 +202,12 @@ export default function SteamDB() {
                               <TableCell>
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2">
-                                    <a
-                                      href={steamUrl}
-                                      target="_blank"
-                                      rel="noreferrer"
+                                    <Link
+                                      to={`/games/app/${record.app_id}`}
                                       className="font-medium text-foreground transition hover:text-primary"
                                     >
                                       {record.name}
-                                    </a>
+                                    </Link>
                                     <a
                                       href={steamUrl}
                                       target="_blank"
@@ -301,14 +300,12 @@ export default function SteamDB() {
                               <TableCell>
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2">
-                                    <a
-                                      href={steamUrl}
-                                      target="_blank"
-                                      rel="noreferrer"
+                                    <Link
+                                      to={`/games/app/${record.app_id}`}
                                       className="font-medium text-foreground transition hover:text-primary"
                                     >
                                       {record.name}
-                                    </a>
+                                    </Link>
                                     <a
                                       href={steamUrl}
                                       target="_blank"
