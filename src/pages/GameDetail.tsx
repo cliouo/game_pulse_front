@@ -6,14 +6,21 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
+  Clock,
   ExternalLink,
+  Gamepad2,
   Globe,
   Heart,
   Medal,
+  MessageSquare,
   Monitor,
+  Newspaper,
+  ShoppingCart,
   Star,
   Tag,
   Terminal,
+  ThumbsDown,
+  ThumbsUp,
   TrendingUp,
   Trophy,
   Users,
@@ -40,6 +47,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGameByAppId, useLatestStats } from "@/hooks/use-games"
 import { usePlayerHistory, usePriceHistory, useFollowerHistory } from "@/hooks/use-steam-history"
 import { useGameTags } from "@/hooks/use-steam-metadata"
+import { useNewsByAppId } from "@/hooks/use-steam-news"
+import { useSteamReviewsByAppId } from "@/hooks/use-steam-reviews"
+import { useIGDBByAppId } from "@/hooks/use-igdb"
+import { useDealsByAppId } from "@/hooks/use-deals"
+import { useHLTBByAppId } from "@/hooks/use-hltb"
+import { useSteamSpyByAppId } from "@/hooks/use-steamspy"
 import { cn } from "@/lib/utils"
 
 const numberFormatter = new Intl.NumberFormat("zh-CN")
@@ -134,6 +147,18 @@ type ChartTooltipProps = {
   active?: boolean
   payload?: readonly TooltipPayloadItem[]
 }
+
+const formatHours = (value?: number | null) =>
+  typeof value === "number" ? `${value.toFixed(1)} 小时` : "--"
+
+const formatOwners = (min?: number, max?: number) => {
+  if (typeof min !== "number" || typeof max !== "number") return "--"
+  const toWan = (n: number) => (n / 10000).toFixed(0)
+  return `${toWan(min)}万 - ${toWan(max)}万`
+}
+
+const minutesToHours = (minutes?: number) =>
+  typeof minutes === "number" ? `${(minutes / 60).toFixed(1)} 小时` : "--"
 
 function renderChartEmpty() {
   return (
@@ -252,6 +277,47 @@ export default function GameDetail() {
   const priceHistoryData = priceHistoryQuery.data?.data ?? []
   const followerHistoryData = followerHistoryQuery.data?.data ?? []
   const [isAboutExpanded, setIsAboutExpanded] = useState(false)
+  const hltbQuery = useHLTBByAppId(appId)
+  const igdbQuery = useIGDBByAppId(appId)
+  const steamSpyQuery = useSteamSpyByAppId(appId)
+  const newsQuery = useNewsByAppId(appId, 1, 10)
+  const reviewsQuery = useSteamReviewsByAppId(appId, 1, 10)
+  const dealsQuery = useDealsByAppId(appId, 1, 20)
+
+  const hltbData = hltbQuery.data?.data
+  const igdbData = igdbQuery.data?.data
+  const steamSpyData = steamSpyQuery.data?.data?.[0]
+  const newsItems = newsQuery.data?.data ?? []
+  const reviewItems = reviewsQuery.data?.data ?? []
+  const dealItems = dealsQuery.data?.data ?? []
+
+  const igdbGenres = useMemo(() => {
+    if (!igdbData?.genres_json) return []
+    try {
+      const parsed = JSON.parse(igdbData.genres_json) as unknown
+      if (!Array.isArray(parsed)) return []
+      return parsed.filter(
+        (g): g is { name: string } =>
+          g && typeof g === "object" && typeof (g as Record<string, unknown>).name === "string",
+      )
+    } catch {
+      return []
+    }
+  }, [igdbData?.genres_json])
+
+  const igdbThemes = useMemo(() => {
+    if (!igdbData?.themes_json) return []
+    try {
+      const parsed = JSON.parse(igdbData.themes_json) as unknown
+      if (!Array.isArray(parsed)) return []
+      return parsed.filter(
+        (t): t is { name: string } =>
+          t && typeof t === "object" && typeof (t as Record<string, unknown>).name === "string",
+      )
+    } catch {
+      return []
+    }
+  }, [igdbData?.themes_json])
 
   const platforms = useMemo<PlatformPayload | null>(() => {
     if (!game?.platforms) {
@@ -836,6 +902,172 @@ export default function GameDetail() {
         </Card>
       </div>
 
+      {/* HLTB + IGDB + SteamSpy 信息栏 */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="border-border/60 bg-card/60 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-4 w-4 text-primary" />
+              通关时长
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {hltbQuery.isLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={`hltb-skeleton-${i}`} className="h-8 w-full" />
+                ))}
+              </div>
+            ) : hltbData ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">主线</span>
+                  <span className="text-sm font-medium">{formatHours(hltbData.main_story_hours)}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">主线+额外</span>
+                  <span className="text-sm font-medium">{formatHours(hltbData.main_extra_hours)}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">完美通关</span>
+                  <span className="text-sm font-medium">
+                    {formatHours(hltbData.completionist_hours)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">所有风格</span>
+                  <span className="text-sm font-medium">{formatHours(hltbData.all_styles_hours)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 px-3 py-4 text-center text-sm text-muted-foreground">
+                暂无通关时长数据
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/60 bg-card/60 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Gamepad2 className="h-4 w-4 text-primary" />
+              IGDB 信息
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {igdbQuery.isLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={`igdb-skeleton-${i}`} className="h-8 w-full" />
+                ))}
+              </div>
+            ) : igdbData ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  {typeof igdbData.rating === "number" ? (
+                    <div className="rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                      <span className="text-xs text-muted-foreground">用户评分</span>
+                      <p className="text-sm font-medium">{Math.round(igdbData.rating)}</p>
+                    </div>
+                  ) : null}
+                  {typeof igdbData.aggregated_rating === "number" ? (
+                    <div className="rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                      <span className="text-xs text-muted-foreground">媒体评分</span>
+                      <p className="text-sm font-medium">
+                        {Math.round(igdbData.aggregated_rating)}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+                {igdbGenres.length > 0 ? (
+                  <div>
+                    <p className="mb-1 text-xs text-muted-foreground">流派</p>
+                    <div className="flex flex-wrap gap-1">
+                      {igdbGenres.map((g, i) => (
+                        <Badge
+                          key={`igdb-genre-${i}`}
+                          variant="secondary"
+                          className="border border-border/60 bg-secondary/70 text-xs"
+                        >
+                          {g.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {igdbThemes.length > 0 ? (
+                  <div>
+                    <p className="mb-1 text-xs text-muted-foreground">主题</p>
+                    <div className="flex flex-wrap gap-1">
+                      {igdbThemes.map((t, i) => (
+                        <Badge
+                          key={`igdb-theme-${i}`}
+                          variant="secondary"
+                          className="border border-border/60 bg-secondary/70 text-xs"
+                        >
+                          {t.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 px-3 py-4 text-center text-sm text-muted-foreground">
+                暂无 IGDB 数据
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/60 bg-card/60 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Users className="h-4 w-4 text-primary" />
+              SteamSpy 数据
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {steamSpyQuery.isLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={`steamspy-skeleton-${i}`} className="h-8 w-full" />
+                ))}
+              </div>
+            ) : steamSpyData ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">所有者范围</span>
+                  <span className="text-sm font-medium">
+                    {formatOwners(steamSpyData.owners_min, steamSpyData.owners_max)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">平均游戏时长</span>
+                  <span className="text-sm font-medium">
+                    {minutesToHours(steamSpyData.average_playtime)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">中位游戏时长</span>
+                  <span className="text-sm font-medium">
+                    {minutesToHours(steamSpyData.median_playtime)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground">CCU</span>
+                  <span className="text-sm font-medium">{formatNumber(steamSpyData.ccu)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 px-3 py-4 text-center text-sm text-muted-foreground">
+                暂无 SteamSpy 数据
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="border-border/60 bg-card/60 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -870,6 +1102,182 @@ export default function GameDetail() {
               暂无标签数据
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* 数据详情 Tabs */}
+      <Card className="border-border/60 bg-card/60 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Newspaper className="h-4 w-4 text-primary" />
+            数据详情
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="news" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="news">
+                <Newspaper className="mr-1 h-3.5 w-3.5" />
+                新闻
+              </TabsTrigger>
+              <TabsTrigger value="reviews">
+                <MessageSquare className="mr-1 h-3.5 w-3.5" />
+                评测
+              </TabsTrigger>
+              <TabsTrigger value="deals">
+                <ShoppingCart className="mr-1 h-3.5 w-3.5" />
+                价格比较
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="news" className="mt-0">
+              {newsQuery.isLoading ? (
+                renderChartLoading()
+              ) : newsItems.length > 0 ? (
+                <div className="space-y-3">
+                  {newsItems.map((item) => (
+                    <div
+                      key={`news-${item.id}`}
+                      className="rounded-lg border border-border/60 bg-muted/20 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-medium text-foreground transition hover:text-primary"
+                        >
+                          {item.title}
+                        </a>
+                      </div>
+                      <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                        {item.author ? <span>{item.author}</span> : null}
+                        <span>{formatTimestamp(item.published_at)}</span>
+                      </div>
+                      {item.contents ? (
+                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                          {stripHTML(item.contents).slice(0, 150)}
+                          {stripHTML(item.contents).length > 150 ? "..." : ""}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-sm text-muted-foreground">
+                  暂无新闻数据
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="reviews" className="mt-0">
+              {reviewsQuery.isLoading ? (
+                renderChartLoading()
+              ) : reviewItems.length > 0 ? (
+                <div className="space-y-3">
+                  {reviewItems.map((item) => (
+                    <div
+                      key={`review-${item.id}`}
+                      className="rounded-lg border border-border/60 bg-muted/20 p-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        {item.voted_up ? (
+                          <ThumbsUp className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <ThumbsDown className="h-4 w-4 text-rose-400" />
+                        )}
+                        <Badge
+                          variant="secondary"
+                          className="border border-border/60 bg-secondary/70 text-xs"
+                        >
+                          {item.language}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          游戏时长: {minutesToHours(item.playtime_forever)}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {item.review_text.slice(0, 200)}
+                        {item.review_text.length > 200 ? "..." : ""}
+                      </p>
+                      <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <ThumbsUp className="h-3 w-3" />
+                          {formatNumber(item.votes_up)}
+                        </span>
+                        <span>{formatTimestamp(item.review_created_at)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-sm text-muted-foreground">
+                  暂无评测数据
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="deals" className="mt-0">
+              {dealsQuery.isLoading ? (
+                renderChartLoading()
+              ) : dealItems.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border/60 text-xs text-muted-foreground">
+                        <th className="pb-2 pr-4 text-left font-medium">商店</th>
+                        <th className="pb-2 pr-4 text-right font-medium">当前价格</th>
+                        <th className="pb-2 pr-4 text-right font-medium">原价</th>
+                        <th className="pb-2 pr-4 text-right font-medium">折扣</th>
+                        <th className="pb-2 pr-4 text-right font-medium">历史最低</th>
+                        <th className="pb-2 text-right font-medium">链接</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dealItems.map((deal) => (
+                        <tr key={`deal-${deal.id}`} className="border-b border-border/30">
+                          <td className="py-2 pr-4 font-medium">{deal.store}</td>
+                          <td className="py-2 pr-4 text-right text-emerald-400">
+                            ${deal.current_price.toFixed(2)}
+                          </td>
+                          <td className="py-2 pr-4 text-right text-muted-foreground">
+                            ${deal.regular_price.toFixed(2)}
+                          </td>
+                          <td className="py-2 pr-4 text-right">
+                            {deal.discount_percent > 0 ? (
+                              <Badge
+                                variant="secondary"
+                                className="border-transparent bg-rose-500/15 text-[10px] text-rose-400"
+                              >
+                                -{Math.round(deal.discount_percent)}%
+                              </Badge>
+                            ) : "--"}
+                          </td>
+                          <td className="py-2 pr-4 text-right text-muted-foreground">
+                            ${deal.historical_low.toFixed(2)}
+                          </td>
+                          <td className="py-2 text-right">
+                            <a
+                              href={deal.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-primary transition hover:text-primary/80"
+                            >
+                              <ExternalLink className="inline h-3.5 w-3.5" />
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-sm text-muted-foreground">
+                  暂无价格数据
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

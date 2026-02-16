@@ -5,7 +5,9 @@ import { zhCN } from "date-fns/locale"
 import RiskPieChart from "@/components/charts/RiskPieChart"
 import { BlurText } from "@/components/ui/blur-text"
 import StatCard from "@/components/common/StatCard"
+import BestDealsPreview from "@/components/dashboard/BestDealsPreview"
 import HotGamesPreview from "@/components/dashboard/HotGamesPreview"
+import LatestNewsPreview from "@/components/dashboard/LatestNewsPreview"
 import MostFollowedPreview from "@/components/dashboard/MostFollowedPreview"
 import QuickLinks from "@/components/dashboard/QuickLinks"
 import SalesPreview from "@/components/dashboard/SalesPreview"
@@ -154,6 +156,11 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <SalesPreview />
         <MostFollowedPreview />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <LatestNewsPreview />
+        <BestDealsPreview />
       </div>
     </div>
   )
