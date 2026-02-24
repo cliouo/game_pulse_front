@@ -9,6 +9,8 @@ import MarketOpportunities from "@/pages/MarketOpportunities"
 import PotentialGames from "@/pages/PotentialGames"
 import Rankings from "@/pages/Rankings"
 import SteamDB from "@/pages/SteamDB"
+import Deals from "@/pages/Deals"
+import Charts from "@/pages/Charts"
 import AdminDashboard from "@/pages/admin/AdminDashboard"
 import TasksPage from "@/pages/admin/TasksPage"
 
@@ -24,6 +26,8 @@ export const routes: RouteObject[] = [
       { path: "potential", element: <PotentialGames /> },
       { path: "market", element: <MarketOpportunities /> },
       { path: "steamdb", element: <SteamDB /> },
+      { path: "deals", element: <Deals /> },
+      { path: "charts", element: <Charts /> },
     ],
   },
   {

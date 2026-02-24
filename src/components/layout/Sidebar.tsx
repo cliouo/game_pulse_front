@@ -1,10 +1,12 @@
 import { NavLink } from "react-router-dom"
 import {
+  BarChart3,
   Database,
   Gamepad2,
   LayoutDashboard,
   PanelLeftClose,
   PanelLeftOpen,
+  Percent,
   Target,
   TrendingUp,
   Trophy,
@@ -52,6 +54,16 @@ const navItems = [
     label: "SteamDB",
     href: "/steamdb",
     icon: Database,
+  },
+  {
+    label: "促销折扣",
+    href: "/deals",
+    icon: Percent,
+  },
+  {
+    label: "数据图表",
+    href: "/charts",
+    icon: BarChart3,
   },
 ]
 
