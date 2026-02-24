@@ -350,20 +350,20 @@ export default function GameDetail() {
             return null
           }
           const screenshotItem = item as Record<string, unknown>
-          return {
-            id: typeof screenshotItem.id === "number" ? screenshotItem.id : undefined,
-            path_thumbnail:
-              typeof screenshotItem.path_thumbnail === "string"
-                ? screenshotItem.path_thumbnail
-                : undefined,
-            path_full:
-              typeof screenshotItem.path_full === "string"
-                ? screenshotItem.path_full
-                : undefined,
+          const screenshot: ScreenshotPayload = {}
+          if (typeof screenshotItem.id === "number") {
+            screenshot.id = screenshotItem.id
           }
+          if (typeof screenshotItem.path_thumbnail === "string") {
+            screenshot.path_thumbnail = screenshotItem.path_thumbnail
+          }
+          if (typeof screenshotItem.path_full === "string") {
+            screenshot.path_full = screenshotItem.path_full
+          }
+          return screenshot
         })
         .filter((item): item is ScreenshotPayload =>
-          Boolean(item && (item.path_thumbnail || item.path_full)),
+          item !== null && Boolean(item.path_thumbnail || item.path_full),
         )
     } catch {
       return []

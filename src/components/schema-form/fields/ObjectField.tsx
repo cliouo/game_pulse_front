@@ -22,7 +22,7 @@ type ObjectFieldProps = FieldProps & {
 type FieldEntry = {
   name: string
   schema: ExtendedJSONSchema
-  uiSchema?: UISchema
+  uiSchema: UISchema | undefined
   index: number
 }
 

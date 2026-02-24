@@ -16,7 +16,7 @@ import { validateSchema } from "./validators/ajv-instance"
 type FieldEntry = {
   name: string
   schema: ExtendedJSONSchema
-  uiSchema?: UISchema
+  uiSchema: UISchema | undefined
   index: number
 }
 
