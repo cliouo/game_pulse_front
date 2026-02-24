@@ -267,9 +267,9 @@ export default function GameDetail() {
 
   const statsQuery = useLatestStats(appId)
   const tagsQuery = useGameTags(appId)
-  const playerHistoryQuery = usePlayerHistory(appId, { page: 1, page_size: 500 })
-  const priceHistoryQuery = usePriceHistory(appId, { page: 1, page_size: 500 })
-  const followerHistoryQuery = useFollowerHistory(appId, { page: 1, page_size: 500 })
+  const playerHistoryQuery = usePlayerHistory(appId, { page: 1, page_size: 100 })
+  const priceHistoryQuery = usePriceHistory(appId, { page: 1, page_size: 100 })
+  const followerHistoryQuery = useFollowerHistory(appId, { page: 1, page_size: 100 })
 
   const stats = statsQuery.data?.data
   const tags = tagsQuery.data?.data ?? []

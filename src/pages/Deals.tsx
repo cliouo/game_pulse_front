@@ -30,9 +30,9 @@ const currencySymbolMap: Record<string, string> = {
   KRW: "₩",
 }
 
-const formatPrice = (cents: number, currency: string) => {
+const formatPrice = (value: number, currency: string) => {
   const symbol = currencySymbolMap[currency] ?? currency
-  return `${symbol}${(cents / 100).toFixed(2)}`
+  return `${symbol}${value.toFixed(2)}`
 }
 
 const currencyFormatterCache = new Map<string, Intl.NumberFormat>()
