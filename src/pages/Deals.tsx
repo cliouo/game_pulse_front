@@ -54,8 +54,7 @@ const getCurrencyFormatter = (currency: string) => {
   return formatter
 }
 
-const formatDealPrice = (cents: number, currency: string) => {
-  const value = cents / 100
+const formatDealPrice = (value: number, currency: string) => {
   const symbol = currencySymbolMap[currency] ?? currency
 
   try {
