@@ -162,7 +162,7 @@ export default function Deals() {
                                 to={`/games/app/${record.app_id}`}
                                 className="font-medium text-foreground transition hover:text-primary"
                               >
-                                {record.app_id}
+                                {record.name || record.app_id}
                               </Link>
                             </TableCell>
                             <TableCell>{record.store}</TableCell>
@@ -186,7 +186,7 @@ export default function Deals() {
                                 target="_blank"
                                 rel="noreferrer"
                                 className="inline-flex text-muted-foreground transition hover:text-foreground"
-                                aria-label={`打开商店购买链接: ${record.app_id}`}
+                                aria-label={`打开商店购买链接: ${record.name || record.app_id}`}
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </a>

@@ -396,6 +396,7 @@ export interface IGDBGameInfo {
 export interface GameDealInfo {
   id: number;
   app_id: number;
+  name?: string;
   store: string;
   current_price: number;
   regular_price: number;
