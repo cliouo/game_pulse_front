@@ -157,7 +157,7 @@ export default function Charts() {
           <TabsTrigger value="onlinePlayers">在线玩家</TabsTrigger>
           <TabsTrigger value="followers">关注数</TabsTrigger>
           <TabsTrigger value="rating">评分</TabsTrigger>
-          <TabsTrigger value="wishlist">愿望单</TabsTrigger>
+          <TabsTrigger value="wishlist">关注数</TabsTrigger>
         </TabsList>
 
         <TabsContent value="onlinePlayers" className="space-y-4">
@@ -294,8 +294,8 @@ export default function Charts() {
                   )}
                 />
                 <Bar
-                  dataKey="wishlist_count"
-                  name="愿望单"
+                  dataKey="follow_count"
+                  name="关注数"
                   fill="hsl(var(--primary))"
                 />
               </BarChart>

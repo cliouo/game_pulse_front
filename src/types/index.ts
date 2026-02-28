@@ -318,7 +318,8 @@ export interface SteamMostWishlistedInfo {
   app_id: number;
   name: string;
   rank: number;
-  wishlist_count: number;
+  follow_count: number;
+  seven_day_gain: number;
   recorded_at: number;
 }
 

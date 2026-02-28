@@ -10,14 +10,6 @@ const rankingsApi = {
     return response.data;
   },
 
-  async getTopWishlist(limit?: number) {
-    const params = typeof limit === 'number' ? { limit } : undefined;
-    const response = await apiClient.get<ApiResponse<RankingRecord[]>>('/steam-rankings/wishlist/top', {
-      params,
-    });
-    return response.data;
-  },
-
   async getRecordTimes() {
     const response = await apiClient.get<ApiResponse<string[]>>('/steam-rankings/record-times');
     return response.data;

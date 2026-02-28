@@ -8,12 +8,6 @@ export function useTopSelling(limit?: number) {
   });
 }
 
-export function useTopWishlist(limit?: number) {
-  return useQuery({
-    queryKey: ['rankings-top-wishlist', limit],
-    queryFn: () => rankingsApi.getTopWishlist(limit),
-  });
-}
 
 export function useRecordTimes() {
   return useQuery({

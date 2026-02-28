@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useTopSelling, useTopWishlist } from "@/hooks/use-rankings"
+import { useTopSelling } from "@/hooks/use-rankings"
 import { useTopPlayers } from "@/hooks/use-stats"
 import {
   useMostFollowed,
@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils"
 
 const limitOptions = ["10", "20", "50", "100"]
 
-const steamdbTabs = new Set(["mostfollowed", "toprated", "mostwishlisted", "mostplayed"])
+const steamdbTabs = new Set(["mostfollowed", "toprated", "wishlist", "mostplayed"])
 
 const numberFormatter = new Intl.NumberFormat("zh-CN")
 
@@ -85,11 +85,9 @@ export default function Rankings() {
 
   // Steam 原生排行
   const topSellingQuery = useTopSelling(limitValue)
-  const topWishlistQuery = useTopWishlist(limitValue)
   const topPlayersQuery = useTopPlayers(limitValue)
 
   const topSellingRecords = topSellingQuery.data?.data ?? []
-  const topWishlistRecords = topWishlistQuery.data?.data ?? []
   const topPlayersRecords = topPlayersQuery.data?.data ?? []
 
   // SteamDB 排行
@@ -121,22 +119,20 @@ export default function Rankings() {
 
   const getSubtitle = () => {
     if (activeTab === "topselling") return formatRecordTime(topSellingRecords[0]?.record_time)
-    if (activeTab === "wishlist") return formatRecordTime(topWishlistRecords[0]?.record_time)
+    if (activeTab === "wishlist") return formatTimestamp(mostWishlistedRecords[0]?.recorded_at)
     if (activeTab === "players") return formatRecordTime(topPlayersRecords[0]?.collected_at)
     if (activeTab === "mostfollowed") return formatTimestamp(mostFollowedRecords[0]?.recorded_at)
     if (activeTab === "toprated") return formatTimestamp(topRatedRecords[0]?.recorded_at)
-    if (activeTab === "mostwishlisted") return formatTimestamp(mostWishlistedRecords[0]?.recorded_at)
     if (activeTab === "mostplayed") return formatTimestamp(mostPlayedRecords[0]?.recorded_at)
     return "暂无更新"
   }
 
   const subtitleLoading =
     (activeTab === "topselling" && topSellingQuery.isLoading) ||
-    (activeTab === "wishlist" && topWishlistQuery.isLoading) ||
+    (activeTab === "wishlist" && mostWishlistedQuery.isLoading) ||
     (activeTab === "players" && topPlayersQuery.isLoading) ||
     (activeTab === "mostfollowed" && mostFollowedQuery.isLoading) ||
     (activeTab === "toprated" && topRatedQuery.isLoading) ||
-    (activeTab === "mostwishlisted" && mostWishlistedQuery.isLoading) ||
     (activeTab === "mostplayed" && mostPlayedQuery.isLoading)
 
   return (
@@ -182,7 +178,6 @@ export default function Rankings() {
           <TabsTrigger value="players">在线人数榜</TabsTrigger>
           <TabsTrigger value="mostfollowed">最多关注</TabsTrigger>
           <TabsTrigger value="toprated">最高评分</TabsTrigger>
-          <TabsTrigger value="mostwishlisted">最多愿望单</TabsTrigger>
           <TabsTrigger value="mostplayed">最多游玩</TabsTrigger>
         </TabsList>
 
@@ -195,11 +190,68 @@ export default function Rankings() {
           />
         </TabsContent>
 
-        <TabsContent value="wishlist">
-          <RankingTable
-            records={topWishlistRecords}
-            loading={topWishlistQuery.isLoading}
-            count={limitValue}
+        <TabsContent value="wishlist" className="space-y-4">
+          <Card className="border-border/60 bg-card/60 shadow-sm">
+            <CardContent className="pt-4">
+              <Table className="min-w-[760px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead>游戏名称</TableHead>
+                    <TableHead className="w-[180px]">关注数</TableHead>
+                    <TableHead className="w-[160px]">7日增长</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mostWishlistedQuery.isLoading
+                    ? skeletonRows.map((_, index) => (
+                        <TableRow key={`wl-sk-${index}`}>
+                          <TableCell><Skeleton className="h-5 w-14" /></TableCell>
+                          <TableCell><div className="space-y-2"><Skeleton className="h-4 w-44" /><Skeleton className="h-3 w-24" /></div></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        </TableRow>
+                      ))
+                    : mostWishlistedRecords.length > 0
+                      ? mostWishlistedRecords.map((record) => (
+                          <TableRow
+                            key={`wl-${record.app_id}-${record.rank}`}
+                            className={cn(getRowClassName(record.rank))}
+                          >
+                            <TableCell><RankBadge rank={record.rank} /></TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <Link to={`/games/app/${record.app_id}`} className="font-medium text-foreground transition hover:text-primary">{record.name}</Link>
+                                  <a href={`https://store.steampowered.com/app/${record.app_id}`} target="_blank" rel="noreferrer" className="text-muted-foreground transition hover:text-foreground" aria-label={`打开 ${record.name} Steam 商店`}><ExternalLink className="h-4 w-4" /></a>
+                                </div>
+                                <div className="text-xs text-muted-foreground">App ID: {record.app_id}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Heart className="h-4 w-4 text-rose-500" />
+                                <span>{formatNumber(record.follow_count)}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm text-emerald-600">+{formatNumber(record.seven_day_gain)}</TableCell>
+                          </TableRow>
+                        ))
+                      : (
+                          <TableRow>
+                            <TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
+                          </TableRow>
+                        )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+          <Pagination
+            page={mostWishlistedPage}
+            pageSize={mostWishlistedPageSize}
+            total={mostWishlistedTotal}
+            onPageChange={setMostWishlistedPage}
+            onPageSizeChange={(v) => { setMostWishlistedPageSize(v); setMostWishlistedPage(1) }}
           />
         </TabsContent>
 
@@ -332,64 +384,6 @@ export default function Rankings() {
             total={topRatedTotal}
             onPageChange={setTopRatedPage}
             onPageSizeChange={(v) => { setTopRatedPageSize(v); setTopRatedPage(1) }}
-          />
-        </TabsContent>
-
-        {/* SteamDB 排行：最多愿望单 */}
-        <TabsContent value="mostwishlisted" className="space-y-4">
-          <Card className="border-border/60 bg-card/60 shadow-sm">
-            <CardContent className="pt-4">
-              <Table className="min-w-[720px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">排名</TableHead>
-                    <TableHead>游戏</TableHead>
-                    <TableHead className="w-[180px]">愿望单数</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mostWishlistedQuery.isLoading
-                    ? skeletonRows.map((_, index) => (
-                        <TableRow key={`mw-sk-${index}`}>
-                          <TableCell><Skeleton className="h-5 w-14" /></TableCell>
-                          <TableCell><div className="space-y-2"><Skeleton className="h-4 w-44" /><Skeleton className="h-3 w-24" /></div></TableCell>
-                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                        </TableRow>
-                      ))
-                    : mostWishlistedRecords.length > 0
-                      ? mostWishlistedRecords.map((record) => (
-                          <TableRow
-                            key={`mw-${record.app_id}-${record.rank}`}
-                            className={cn(getRowClassName(record.rank))}
-                          >
-                            <TableCell><RankBadge rank={record.rank} /></TableCell>
-                            <TableCell>
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <Link to={`/games/app/${record.app_id}`} className="font-medium text-foreground transition hover:text-primary">{record.name}</Link>
-                                  <a href={`https://store.steampowered.com/app/${record.app_id}`} target="_blank" rel="noreferrer" className="text-muted-foreground transition hover:text-foreground" aria-label={`打开 ${record.name} Steam 商店`}><ExternalLink className="h-4 w-4" /></a>
-                                </div>
-                                <div className="text-xs text-muted-foreground">App ID: {record.app_id}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{formatNumber(record.wishlist_count)}</TableCell>
-                          </TableRow>
-                        ))
-                      : (
-                          <TableRow>
-                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
-                          </TableRow>
-                        )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-          <Pagination
-            page={mostWishlistedPage}
-            pageSize={mostWishlistedPageSize}
-            total={mostWishlistedTotal}
-            onPageChange={setMostWishlistedPage}
-            onPageSizeChange={(v) => { setMostWishlistedPageSize(v); setMostWishlistedPage(1) }}
           />
         </TabsContent>
 
