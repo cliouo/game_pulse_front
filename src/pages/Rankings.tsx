@@ -120,7 +120,7 @@ export default function Rankings() {
   const getSubtitle = () => {
     if (activeTab === "topselling") return formatRecordTime(topSellingRecords[0]?.record_time)
     if (activeTab === "wishlist") return formatTimestamp(mostWishlistedRecords[0]?.recorded_at)
-    if (activeTab === "players") return formatRecordTime(topPlayersRecords[0]?.collected_at)
+    if (activeTab === "players") return formatTimestamp(topPlayersRecords[0]?.collected_at)
     if (activeTab === "mostfollowed") return formatTimestamp(mostFollowedRecords[0]?.recorded_at)
     if (activeTab === "toprated") return formatTimestamp(topRatedRecords[0]?.recorded_at)
     if (activeTab === "mostplayed") return formatTimestamp(mostPlayedRecords[0]?.recorded_at)
@@ -193,10 +193,11 @@ export default function Rankings() {
         <TabsContent value="wishlist" className="space-y-4">
           <Card className="border-border/60 bg-card/60 shadow-sm">
             <CardContent className="pt-4">
-              <Table className="min-w-[760px]">
+              <Table className="min-w-[860px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead className="hidden w-[100px] sm:table-cell">封面</TableHead>
                     <TableHead>游戏名称</TableHead>
                     <TableHead className="w-[180px]">关注数</TableHead>
                     <TableHead className="w-[160px]">7日增长</TableHead>
@@ -207,6 +208,7 @@ export default function Rankings() {
                     ? skeletonRows.map((_, index) => (
                         <TableRow key={`wl-sk-${index}`}>
                           <TableCell><Skeleton className="h-5 w-14" /></TableCell>
+                          <TableCell className="hidden sm:table-cell"><Skeleton className="h-10 w-16" /></TableCell>
                           <TableCell><div className="space-y-2"><Skeleton className="h-4 w-44" /><Skeleton className="h-3 w-24" /></div></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -219,6 +221,16 @@ export default function Rankings() {
                             className={cn(getRowClassName(record.rank))}
                           >
                             <TableCell><RankBadge rank={record.rank} /></TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              <div className="h-10 w-16 overflow-hidden rounded-md border border-border/60 bg-muted/40">
+                                <img
+                                  src={`https://cdn.akamai.steamstatic.com/steam/apps/${record.app_id}/header.jpg`}
+                                  alt={record.name}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -239,7 +251,7 @@ export default function Rankings() {
                         ))
                       : (
                           <TableRow>
-                            <TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
+                            <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
                           </TableRow>
                         )}
                 </TableBody>
@@ -267,10 +279,11 @@ export default function Rankings() {
         <TabsContent value="mostfollowed" className="space-y-4">
           <Card className="border-border/60 bg-card/60 shadow-sm">
             <CardContent className="pt-4">
-              <Table className="min-w-[720px]">
+              <Table className="min-w-[820px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead className="hidden w-[100px] sm:table-cell">封面</TableHead>
                     <TableHead>游戏</TableHead>
                     <TableHead className="w-[180px]">关注数</TableHead>
                   </TableRow>
@@ -280,6 +293,7 @@ export default function Rankings() {
                     ? skeletonRows.map((_, index) => (
                         <TableRow key={`mf-sk-${index}`}>
                           <TableCell><Skeleton className="h-5 w-14" /></TableCell>
+                          <TableCell className="hidden sm:table-cell"><Skeleton className="h-10 w-16" /></TableCell>
                           <TableCell><div className="space-y-2"><Skeleton className="h-4 w-44" /><Skeleton className="h-3 w-24" /></div></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                         </TableRow>
@@ -291,6 +305,16 @@ export default function Rankings() {
                             className={cn(getRowClassName(record.rank))}
                           >
                             <TableCell><RankBadge rank={record.rank} /></TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              <div className="h-10 w-16 overflow-hidden rounded-md border border-border/60 bg-muted/40">
+                                <img
+                                  src={`https://cdn.akamai.steamstatic.com/steam/apps/${record.app_id}/header.jpg`}
+                                  alt={record.name}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -310,7 +334,7 @@ export default function Rankings() {
                         ))
                       : (
                           <TableRow>
-                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
+                            <TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
                           </TableRow>
                         )}
                 </TableBody>
@@ -330,10 +354,11 @@ export default function Rankings() {
         <TabsContent value="toprated" className="space-y-4">
           <Card className="border-border/60 bg-card/60 shadow-sm">
             <CardContent className="pt-4">
-              <Table className="min-w-[760px]">
+              <Table className="min-w-[860px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead className="hidden w-[100px] sm:table-cell">封面</TableHead>
                     <TableHead>游戏</TableHead>
                     <TableHead className="w-[160px]">评分</TableHead>
                     <TableHead className="w-[160px]">评分票数</TableHead>
@@ -344,6 +369,7 @@ export default function Rankings() {
                     ? skeletonRows.map((_, index) => (
                         <TableRow key={`tr-sk-${index}`}>
                           <TableCell><Skeleton className="h-5 w-14" /></TableCell>
+                          <TableCell className="hidden sm:table-cell"><Skeleton className="h-10 w-16" /></TableCell>
                           <TableCell><div className="space-y-2"><Skeleton className="h-4 w-44" /><Skeleton className="h-3 w-24" /></div></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -356,6 +382,16 @@ export default function Rankings() {
                             className={cn(getRowClassName(record.rank))}
                           >
                             <TableCell><RankBadge rank={record.rank} /></TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              <div className="h-10 w-16 overflow-hidden rounded-md border border-border/60 bg-muted/40">
+                                <img
+                                  src={`https://cdn.akamai.steamstatic.com/steam/apps/${record.app_id}/header.jpg`}
+                                  alt={record.name}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -371,7 +407,7 @@ export default function Rankings() {
                         ))
                       : (
                           <TableRow>
-                            <TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
+                            <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
                           </TableRow>
                         )}
                 </TableBody>
@@ -391,10 +427,11 @@ export default function Rankings() {
         <TabsContent value="mostplayed" className="space-y-4">
           <Card className="border-border/60 bg-card/60 shadow-sm">
             <CardContent className="pt-4">
-              <Table className="min-w-[760px]">
+              <Table className="min-w-[860px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[80px]">排名</TableHead>
+                    <TableHead className="hidden w-[100px] sm:table-cell">封面</TableHead>
                     <TableHead>游戏</TableHead>
                     <TableHead className="w-[180px]">当前在线</TableHead>
                     <TableHead className="w-[180px]">今日峰值</TableHead>
@@ -405,6 +442,7 @@ export default function Rankings() {
                     ? skeletonRows.map((_, index) => (
                         <TableRow key={`mp-sk-${index}`}>
                           <TableCell><Skeleton className="h-5 w-14" /></TableCell>
+                          <TableCell className="hidden sm:table-cell"><Skeleton className="h-10 w-16" /></TableCell>
                           <TableCell><div className="space-y-2"><Skeleton className="h-4 w-44" /><Skeleton className="h-3 w-24" /></div></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -417,6 +455,16 @@ export default function Rankings() {
                             className={cn(getRowClassName(record.rank))}
                           >
                             <TableCell><RankBadge rank={record.rank} /></TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              <div className="h-10 w-16 overflow-hidden rounded-md border border-border/60 bg-muted/40">
+                                <img
+                                  src={`https://cdn.akamai.steamstatic.com/steam/apps/${record.app_id}/header.jpg`}
+                                  alt={record.name}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -432,7 +480,7 @@ export default function Rankings() {
                         ))
                       : (
                           <TableRow>
-                            <TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
+                            <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">暂无数据</TableCell>
                           </TableRow>
                         )}
                 </TableBody>

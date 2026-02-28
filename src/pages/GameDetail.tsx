@@ -261,15 +261,24 @@ export default function GameDetail() {
   const isInvalidId =
     !appIdParam || Number.isNaN(parsedGameId) || !Number.isInteger(parsedGameId) || parsedGameId <= 0
   const appId = isInvalidId ? null : parsedGameId
+  const [trendDays, setTrendDays] = useState<number>(30)
+
+  const historyParams = useMemo(() => {
+    const base: { page: number; page_size: number; start_time?: string } = { page: 1, page_size: 2000 }
+    if (trendDays > 0) {
+      base.start_time = new Date(Date.now() - trendDays * 86400000).toISOString()
+    }
+    return base
+  }, [trendDays])
 
   const gameQuery = useGameByAppId(appId)
   const game = gameQuery.data?.data
 
   const statsQuery = useLatestStats(appId)
   const tagsQuery = useGameTags(appId)
-  const playerHistoryQuery = usePlayerHistory(appId, { page: 1, page_size: 10000 })
-  const priceHistoryQuery = usePriceHistory(appId, { page: 1, page_size: 10000 })
-  const followerHistoryQuery = useFollowerHistory(appId, { page: 1, page_size: 10000 })
+  const playerHistoryQuery = usePlayerHistory(appId, historyParams)
+  const priceHistoryQuery = usePriceHistory(appId, historyParams)
+  const followerHistoryQuery = useFollowerHistory(appId, historyParams)
 
   const stats = statsQuery.data?.data
   const tags = tagsQuery.data?.data ?? []
@@ -1282,11 +1291,29 @@ export default function GameDetail() {
       </Card>
 
       <Card className="border-border/60 bg-card/60 shadow-sm">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
             历史趋势
           </CardTitle>
+          <div className="flex gap-1">
+            {([
+              { value: 7, label: "7天" },
+              { value: 30, label: "30天" },
+              { value: 90, label: "90天" },
+              { value: 0, label: "全部" },
+            ] as const).map((opt) => (
+              <Button
+                key={opt.value}
+                variant={trendDays === opt.value ? "default" : "outline"}
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                onClick={() => setTrendDays(opt.value)}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="players" className="space-y-4">

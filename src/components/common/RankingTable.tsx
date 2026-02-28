@@ -61,10 +61,11 @@ export default function RankingTable({
   return (
     <Card className={cn("border-border/60 bg-card/60 shadow-sm", className)}>
       <CardContent className="pt-4">
-        <Table className="min-w-[520px]">
+        <Table className="min-w-[620px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px]">排名</TableHead>
+              <TableHead className="hidden w-[100px] sm:table-cell">封面</TableHead>
               <TableHead>游戏</TableHead>
               <TableHead className="hidden w-[120px] md:table-cell">
                 更新时间
@@ -77,6 +78,9 @@ export default function RankingTable({
                   <TableRow key={`loading-row-${index}`}>
                     <TableCell>
                       <Skeleton className="h-5 w-12" />
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Skeleton className="h-10 w-16" />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -93,17 +97,27 @@ export default function RankingTable({
                   </TableRow>
                 ))
               : records.length > 0
-                ? records.map((record) => {
+                ? records.map((record, index) => {
                     const steamUrl = record.app_id
                       ? `https://store.steampowered.com/app/${record.app_id}`
                       : undefined
                     return (
                       <TableRow
                         key={`ranking-${record.id}`}
-                        className={cn(getRowClassName(record.rank_order))}
+                        className={cn(getRowClassName(index + 1))}
                       >
                         <TableCell className="w-[60px]">
-                          <RankBadge rank={record.rank_order} />
+                          <RankBadge rank={index + 1} />
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <div className="h-10 w-16 overflow-hidden rounded-md border border-border/60 bg-muted/40">
+                            <img
+                              src={`https://cdn.akamai.steamstatic.com/steam/apps/${record.app_id}/header.jpg`}
+                              alt={record.name}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -151,7 +165,7 @@ export default function RankingTable({
                 : (
                   <TableRow>
                     <TableCell
-                      colSpan={3}
+                      colSpan={4}
                       className="py-6 text-center text-sm text-muted-foreground"
                     >
                       暂无数据
