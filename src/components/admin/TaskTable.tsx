@@ -58,19 +58,21 @@ const priorityToneMap: Record<TaskPriority, string> = {
   CRITICAL: "border-rose-400/40 bg-rose-400/10 text-rose-400",
 }
 
-const formatDateTime = (value?: string) => {
-  if (!value || typeof value !== "string") {
+const formatDateTime = (value?: string | number) => {
+  if (!value && value !== 0) {
     return "--"
+  }
+  const fmt = "MM-dd HH:mm"
+  if (typeof value === "number") {
+    const d = new Date(value < 1e12 ? value * 1000 : value)
+    return isValid(d) ? format(d, fmt, { locale: zhCN }) : "--"
   }
   const parsed = parseISO(value)
   if (isValid(parsed)) {
-    return format(parsed, "MM-dd HH:mm", { locale: zhCN })
+    return format(parsed, fmt, { locale: zhCN })
   }
   const fallback = new Date(value)
-  if (isValid(fallback)) {
-    return format(fallback, "MM-dd HH:mm", { locale: zhCN })
-  }
-  return value
+  return isValid(fallback) ? format(fallback, fmt, { locale: zhCN }) : value
 }
 
 const formatDuration = (value?: number) => {

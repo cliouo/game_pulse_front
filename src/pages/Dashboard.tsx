@@ -25,19 +25,21 @@ const formatNumber = (value?: number) => {
   return numberFormatter.format(value)
 }
 
-const formatUpdateTime = (value?: string) => {
-  if (!value) {
+const formatUpdateTime = (value?: string | number) => {
+  if (!value && value !== 0) {
     return "暂无更新"
+  }
+  const fmt = "yyyy年MM月dd日 HH:mm"
+  if (typeof value === "number") {
+    const d = new Date(value < 1e12 ? value * 1000 : value)
+    return isValid(d) ? format(d, fmt, { locale: zhCN }) : "暂无更新"
   }
   const parsed = parseISO(value)
   if (isValid(parsed)) {
-    return format(parsed, "yyyy年MM月dd日 HH:mm", { locale: zhCN })
+    return format(parsed, fmt, { locale: zhCN })
   }
   const fallback = new Date(value)
-  if (isValid(fallback)) {
-    return format(fallback, "yyyy年MM月dd日 HH:mm", { locale: zhCN })
-  }
-  return "暂无更新"
+  return isValid(fallback) ? format(fallback, fmt, { locale: zhCN }) : "暂无更新"
 }
 
 export default function Dashboard() {

@@ -21,19 +21,21 @@ import { useTaskStats } from "@/hooks/use-admin"
 import { cn } from "@/lib/utils"
 import type { TaskStats as TaskStatsItem } from "@/types"
 
-const formatDateTime = (value?: string) => {
-  if (!value || typeof value !== "string") {
+const formatDateTime = (value?: string | number) => {
+  if (!value && value !== 0) {
     return "--"
+  }
+  const fmt = "MM-dd HH:mm"
+  if (typeof value === "number") {
+    const d = new Date(value < 1e12 ? value * 1000 : value)
+    return isValid(d) ? format(d, fmt, { locale: zhCN }) : "--"
   }
   const parsed = parseISO(value)
   if (isValid(parsed)) {
-    return format(parsed, "MM-dd HH:mm", { locale: zhCN })
+    return format(parsed, fmt, { locale: zhCN })
   }
   const fallback = new Date(value)
-  if (isValid(fallback)) {
-    return format(fallback, "MM-dd HH:mm", { locale: zhCN })
-  }
-  return value
+  return isValid(fallback) ? format(fallback, fmt, { locale: zhCN }) : value
 }
 
 const getStatusLabel = (status?: string) => {
@@ -70,11 +72,8 @@ const getStatusTone = (status?: string) => {
   }
 }
 
-const getRecentStats = (stats: TaskStatsItem[]) => {
-  if (!Array.isArray(stats)) {
-    return []
-  }
-  return stats
+const getRecentStats = (stats: TaskStatsItem[]) =>
+  stats
     .filter((item) => Boolean(item.last_run_time))
     .sort(
       (a, b) =>
@@ -82,14 +81,16 @@ const getRecentStats = (stats: TaskStatsItem[]) => {
         new Date(a.last_run_time).getTime()
     )
     .slice(0, 6)
-}
 
 export default function AdminDashboard() {
   const statsQuery = useTaskStats()
-  const stats = useMemo(() => {
-    const data = statsQuery.data?.data
-    return Array.isArray(data) ? data : []
-  }, [statsQuery.data?.data])
+  const stats = useMemo(
+    () => {
+      const d = statsQuery.data?.data
+      return Array.isArray(d) ? d : []
+    },
+    [statsQuery.data?.data]
+  )
 
   const recentStats = useMemo(() => getRecentStats(stats), [stats])
 
