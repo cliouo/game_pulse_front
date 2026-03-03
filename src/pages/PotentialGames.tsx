@@ -83,7 +83,7 @@ export default function PotentialGames() {
 
   const query = usePotentialGames(params)
   const games = query.data?.data ?? []
-  const total = query.data?.pagination.total ?? 0
+  const total = query.data?.pagination?.total ?? 0
 
   return (
     <div className="space-y-6">
