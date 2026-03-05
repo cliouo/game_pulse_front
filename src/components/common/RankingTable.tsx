@@ -153,6 +153,7 @@ export default function RankingTable({
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 App ID: {record.app_id}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
