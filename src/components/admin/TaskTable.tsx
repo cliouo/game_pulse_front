@@ -29,33 +29,33 @@ import type { Task, TaskExecution, TaskPriority, TaskStatus } from "@/types"
 const placeholderRows = Array.from({ length: 6 })
 
 const statusLabels: Record<TaskStatus, string> = {
-  PENDING: "等待中",
-  RUNNING: "运行中",
-  SUCCESS: "成功",
-  FAILED: "失败",
-  CANCELLED: "已取消",
+  pending: "等待中",
+  running: "运行中",
+  completed: "成功",
+  failed: "失败",
+  cancelled: "已取消",
 }
 
 const statusToneMap: Record<TaskStatus, string> = {
-  PENDING: "border-amber-400/40 bg-amber-400/10 text-amber-400",
-  RUNNING: "border-emerald-400/40 bg-emerald-400/10 text-emerald-400",
-  SUCCESS: "border-emerald-400/40 bg-emerald-400/10 text-emerald-400",
-  FAILED: "border-rose-400/40 bg-rose-400/10 text-rose-400",
-  CANCELLED: "border-slate-400/40 bg-slate-400/10 text-slate-400",
+  pending: "border-amber-400/40 bg-amber-400/10 text-amber-400",
+  running: "border-emerald-400/40 bg-emerald-400/10 text-emerald-400",
+  completed: "border-emerald-400/40 bg-emerald-400/10 text-emerald-400",
+  failed: "border-rose-400/40 bg-rose-400/10 text-rose-400",
+  cancelled: "border-slate-400/40 bg-slate-400/10 text-slate-400",
 }
 
 const priorityLabels: Record<TaskPriority, string> = {
-  LOW: "低",
-  NORMAL: "常规",
-  HIGH: "高",
-  CRITICAL: "紧急",
+  low: "低",
+  normal: "常规",
+  high: "高",
+  urgent: "紧急",
 }
 
 const priorityToneMap: Record<TaskPriority, string> = {
-  LOW: "border-slate-400/40 bg-slate-400/10 text-slate-400",
-  NORMAL: "border-sky-400/40 bg-sky-400/10 text-sky-400",
-  HIGH: "border-amber-400/40 bg-amber-400/10 text-amber-400",
-  CRITICAL: "border-rose-400/40 bg-rose-400/10 text-rose-400",
+  low: "border-slate-400/40 bg-slate-400/10 text-slate-400",
+  normal: "border-sky-400/40 bg-sky-400/10 text-sky-400",
+  high: "border-amber-400/40 bg-amber-400/10 text-amber-400",
+  urgent: "border-rose-400/40 bg-rose-400/10 text-rose-400",
 }
 
 const formatDateTime = (value?: string | number) => {
@@ -75,16 +75,32 @@ const formatDateTime = (value?: string | number) => {
   return isValid(fallback) ? format(fallback, fmt, { locale: zhCN }) : value
 }
 
-const formatDuration = (value?: number) => {
-  if (typeof value !== "number") {
-    return "--"
+const formatDuration = (execution: { duration?: number; started_at?: string | number; completed_at?: string | number }) => {
+  let seconds = execution.duration
+  if (typeof seconds !== "number" || seconds === 0) {
+    const start = toTimestamp(execution.started_at)
+    const end = toTimestamp(execution.completed_at)
+    if (start && end && end > start) {
+      seconds = end - start
+    } else {
+      return "--"
+    }
   }
-  if (value < 60) {
-    return `${value.toFixed(1)}s`
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)}s`
   }
-  const minutes = Math.floor(value / 60)
-  const seconds = Math.round(value % 60)
-  return `${minutes}m ${seconds}s`
+  const minutes = Math.floor(seconds / 60)
+  const secs = Math.round(seconds % 60)
+  return `${minutes}m ${secs}s`
+}
+
+const toTimestamp = (value?: string | number): number | null => {
+  if (!value && value !== 0) return null
+  if (typeof value === "number") {
+    return value < 1e12 ? value : Math.floor(value / 1000)
+  }
+  const d = new Date(value)
+  return isValid(d) ? Math.floor(d.getTime() / 1000) : null
 }
 
 type TaskTableProps = {
@@ -171,7 +187,7 @@ export default function TaskTable({
                       {statusLabels[execution.status]}
                     </Badge>
                     <span className="text-muted-foreground">
-                      耗时 {formatDuration(execution.duration)}
+                      耗时 {formatDuration(execution)}
                     </span>
                   </div>
                   <div className="text-muted-foreground">
@@ -234,9 +250,9 @@ export default function TaskTable({
                       const isExpanded = expandedTaskId === task.id
                       const isPending = isActionPending?.(task.id) ?? false
                       const canExecute =
-                        task.status !== "RUNNING" && task.status !== "PENDING"
+                        task.status !== "running" && task.status !== "pending"
                       const canCancel =
-                        task.status === "RUNNING" || task.status === "PENDING"
+                        task.status === "running" || task.status === "pending"
 
                       return (
                         <Fragment key={`task-${task.id}`}>

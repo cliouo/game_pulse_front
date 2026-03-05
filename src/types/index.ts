@@ -211,12 +211,12 @@ export interface TaskTypeOption {
   parameters?: Record<string, unknown>;
 }
 export type TaskStatus =
-  | 'PENDING'
-  | 'RUNNING'
-  | 'SUCCESS'
-  | 'FAILED'
-  | 'CANCELLED';
-export type TaskPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
+export type TaskPriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export interface TaskParameters {
   [key: string]: unknown;

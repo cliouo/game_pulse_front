@@ -2,7 +2,7 @@ import { z } from "zod"
 
 import type { Task } from "@/types"
 
-export const priorityOptions = ["LOW", "NORMAL", "HIGH", "CRITICAL"] as const
+export const priorityOptions = ["low", "normal", "high", "urgent"] as const
 
 export const taskFormSchema = z.object({
   name: z.string().min(1, "任务名称不能为空"),
@@ -33,7 +33,7 @@ export function taskToFormData(task?: Task): Partial<TaskFormData> {
       description: "",
       type: "",
       cron_expression: "",
-      priority: "NORMAL",
+      priority: "normal",
       enabled: true,
       parameters: {},
     }

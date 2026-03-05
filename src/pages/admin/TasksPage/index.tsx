@@ -27,11 +27,11 @@ import TaskEditDialog from "./TaskEditDialog"
 import { emptySchema, emptyUiSchema } from "./utils"
 
 const statusOptions = [
-  { value: "PENDING", label: "等待中" },
-  { value: "RUNNING", label: "运行中" },
-  { value: "SUCCESS", label: "成功" },
-  { value: "FAILED", label: "失败" },
-  { value: "CANCELLED", label: "已取消" },
+  { value: "pending", label: "等待中" },
+  { value: "running", label: "运行中" },
+  { value: "completed", label: "成功" },
+  { value: "failed", label: "失败" },
+  { value: "cancelled", label: "已取消" },
 ]
 
 export default function TasksPage() {

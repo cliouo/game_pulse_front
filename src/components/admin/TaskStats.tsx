@@ -46,15 +46,15 @@ const formatDateTime = (value?: string) => {
 
 const getStatusLabel = (status?: string) => {
   switch (status) {
-    case "RUNNING":
+    case "running":
       return "运行中"
-    case "PENDING":
+    case "pending":
       return "等待中"
-    case "SUCCESS":
+    case "completed":
       return "成功"
-    case "FAILED":
+    case "failed":
       return "失败"
-    case "CANCELLED":
+    case "cancelled":
       return "已取消"
     default:
       return "未知"
@@ -63,15 +63,15 @@ const getStatusLabel = (status?: string) => {
 
 const getStatusTone = (status?: string) => {
   switch (status) {
-    case "RUNNING":
+    case "running":
       return "border-emerald-400/40 bg-emerald-400/10 text-emerald-400"
-    case "PENDING":
+    case "pending":
       return "border-amber-400/40 bg-amber-400/10 text-amber-400"
-    case "SUCCESS":
+    case "completed":
       return "border-emerald-400/40 bg-emerald-400/10 text-emerald-400"
-    case "FAILED":
+    case "failed":
       return "border-rose-400/40 bg-rose-400/10 text-rose-400"
-    case "CANCELLED":
+    case "cancelled":
       return "border-slate-400/40 bg-slate-400/10 text-slate-400"
     default:
       return "border-border/60 bg-muted/20 text-muted-foreground"
