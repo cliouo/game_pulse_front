@@ -6,7 +6,9 @@ const adminKeys = {
   tasks: (params?: AdminTasksQueryParams) => ['admin-tasks', params] as const,
   tasksRoot: ['admin-tasks'] as const,
   task: (id: number) => ['admin-task', id] as const,
-  executions: (id: number) => ['admin-task-executions', id] as const,
+  executionsRoot: (id: number) => ['admin-task-executions', id] as const,
+  executions: (id: number, page: number, pageSize: number) =>
+    ['admin-task-executions', id, page, pageSize] as const,
   stats: ['admin-task-stats'] as const,
   types: ['admin-task-types'] as const,
   typeSchema: (type: string) => ['admin-task-type-schema', type] as const,
@@ -70,7 +72,7 @@ export function useExecuteTask() {
     mutationFn: (id: number) => adminApi.executeTask(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.tasksRoot });
-      queryClient.invalidateQueries({ queryKey: adminKeys.executions(id) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.executionsRoot(id) });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats });
       queryClient.invalidateQueries({ queryKey: adminKeys.scheduler });
     },
@@ -83,16 +85,33 @@ export function useCancelTask() {
     mutationFn: (id: number) => adminApi.cancelTask(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.tasksRoot });
-      queryClient.invalidateQueries({ queryKey: adminKeys.executions(id) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.executionsRoot(id) });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats });
     },
   });
 }
 
-export function useTaskExecutions(id: number, enabled = true) {
+type TaskExecutionsQueryOptions = {
+  page?: number;
+  pageSize?: number;
+  enabled?: boolean;
+};
+
+export function useTaskExecutions(
+  id: number,
+  optionsOrEnabled: TaskExecutionsQueryOptions | boolean = true,
+) {
+  const options =
+    typeof optionsOrEnabled === 'boolean'
+      ? { enabled: optionsOrEnabled }
+      : optionsOrEnabled;
+  const page = options.page ?? 1;
+  const pageSize = options.pageSize ?? 20;
+  const enabled = options.enabled ?? true;
+
   return useQuery({
-    queryKey: adminKeys.executions(id),
-    queryFn: () => adminApi.getTaskExecutions(id),
+    queryKey: adminKeys.executions(id, page, pageSize),
+    queryFn: () => adminApi.getTaskExecutions(id, page, pageSize),
     enabled: enabled && Number.isFinite(id) && id > 0,
   });
 }

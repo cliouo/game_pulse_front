@@ -42,6 +42,8 @@ export default function TasksPage() {
   const [pageSize, setPageSize] = useState(20)
   const [createOpen, setCreateOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [executeFeedback, setExecuteFeedback] = useState<string | null>(null)
+  const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null)
 
   const taskTypesQuery = useTaskTypes()
 
@@ -155,6 +157,24 @@ export default function TasksPage() {
     )
   }
 
+  const handleExecute = (task: Task) => {
+    executeMutation.mutate(task.id, {
+      onSuccess: () => {
+        setExecuteFeedback("任务已触发")
+        setExpandedTaskId(task.id)
+      },
+    })
+  }
+
+  const handleToggleEnabled = (task: Task) => {
+    updateMutation.mutate({
+      id: task.id,
+      task: {
+        enabled: !task.enabled,
+      },
+    })
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -225,14 +245,19 @@ export default function TasksPage() {
           </SelectContent>
         </Select>
       </div>
+      {executeFeedback ? (
+        <div className="text-xs text-muted-foreground">{executeFeedback}</div>
+      ) : null}
 
       <TaskTable
         tasks={tasks}
         loading={tasksQuery.isLoading}
         error={tasksQuery.isError}
-        onExecute={(task) => executeMutation.mutate(task.id)}
+        onExecute={handleExecute}
         onCancel={(task) => cancelMutation.mutate(task.id)}
         onEdit={(task) => setEditingTask(task)}
+        onToggleEnabled={handleToggleEnabled}
+        defaultExpandedTaskId={expandedTaskId}
         onDelete={(task) => {
           if (window.confirm(`确定删除任务 “${task.name}” 吗？`)) {
             deleteMutation.mutate(task.id)

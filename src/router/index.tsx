@@ -12,6 +12,7 @@ import SteamDB from "@/pages/SteamDB"
 import Deals from "@/pages/Deals"
 import Charts from "@/pages/Charts"
 import AdminDashboard from "@/pages/admin/AdminDashboard"
+import TaskDetailPage from "@/pages/admin/TaskDetailPage"
 import TasksPage from "@/pages/admin/TasksPage"
 
 export const routes: RouteObject[] = [
@@ -36,6 +37,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: "tasks", element: <TasksPage /> },
+      { path: "tasks/:id", element: <TaskDetailPage /> },
     ],
   },
 ]

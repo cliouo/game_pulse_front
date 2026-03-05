@@ -1,6 +1,13 @@
 import { useMemo } from "react"
 import { format, isValid, parseISO } from "date-fns"
 import { zhCN } from "date-fns/locale"
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Gauge,
+  type LucideIcon,
+} from "lucide-react"
 import { Link } from "react-router-dom"
 
 import SchedulerControl from "@/components/admin/SchedulerControl"
@@ -9,33 +16,67 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { useTaskStats } from "@/hooks/use-admin"
 import { cn } from "@/lib/utils"
 import type { TaskStats as TaskStatsItem } from "@/types"
 
-const formatDateTime = (value?: string | number) => {
-  if (!value && value !== 0) {
+const numberFormatter = new Intl.NumberFormat("zh-CN")
+
+const formatNumber = (value?: number) => {
+  if (typeof value !== "number") {
     return "--"
   }
-  const fmt = "MM-dd HH:mm"
+  return numberFormatter.format(value)
+}
+
+const toValidDate = (value?: string | number) => {
+  if (!value && value !== 0) {
+    return null
+  }
   if (typeof value === "number") {
-    const d = new Date(value < 1e12 ? value * 1000 : value)
-    return isValid(d) ? format(d, fmt, { locale: zhCN }) : "--"
+    const date = new Date(value < 1e12 ? value * 1000 : value)
+    return isValid(date) ? date : null
   }
   const parsed = parseISO(value)
   if (isValid(parsed)) {
-    return format(parsed, fmt, { locale: zhCN })
+    return parsed
   }
   const fallback = new Date(value)
-  return isValid(fallback) ? format(fallback, fmt, { locale: zhCN }) : value
+  return isValid(fallback) ? fallback : null
+}
+
+const formatDateTime = (value?: string | number) => {
+  const date = toValidDate(value)
+  if (!date) {
+    return "--"
+  }
+  return format(date, "MM-dd HH:mm", { locale: zhCN })
+}
+
+const formatDuration = (value?: number) => {
+  if (typeof value !== "number") {
+    return "--"
+  }
+  if (value < 60) {
+    return `${value.toFixed(1)}s`
+  }
+  const minutes = Math.floor(value / 60)
+  const seconds = Math.round(value % 60)
+  return `${minutes}m ${seconds}s`
+}
+
+const normalizePercent = (value?: number) => {
+  if (typeof value !== "number") {
+    return undefined
+  }
+  return value <= 1 ? value * 100 : value
+}
+
+const formatPercent = (value?: number) => {
+  if (typeof value !== "number") {
+    return "--"
+  }
+  return `${Math.round(value)}%`
 }
 
 const getStatusLabel = (status?: string) => {
@@ -77,10 +118,49 @@ const getRecentStats = (stats: TaskStatsItem[]) =>
     .filter((item) => Boolean(item.last_run_time))
     .sort(
       (a, b) =>
-        new Date(b.last_run_time).getTime() -
-        new Date(a.last_run_time).getTime()
+        (toValidDate(b.last_run_time)?.getTime() ?? 0) -
+        (toValidDate(a.last_run_time)?.getTime() ?? 0)
     )
-    .slice(0, 6)
+    .slice(0, 10)
+
+type OverviewCardProps = {
+  title: string
+  value: string
+  subtitle: string
+  icon: LucideIcon
+  iconClassName: string
+  loading?: boolean
+}
+
+function OverviewCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  iconClassName,
+  loading = false,
+}: OverviewCardProps) {
+  return (
+    <Card className="border-border/60 bg-card/50 shadow-sm backdrop-blur-sm">
+      <CardContent className="space-y-2 p-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Icon className={cn("h-4 w-4", iconClassName)} />
+          <span>{title}</span>
+        </div>
+        {loading ? (
+          <Skeleton className="h-8 w-16" />
+        ) : (
+          <div className="text-2xl font-semibold text-foreground">{value}</div>
+        )}
+        {loading ? (
+          <Skeleton className="h-4 w-28" />
+        ) : (
+          <div className="text-xs text-muted-foreground">{subtitle}</div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function AdminDashboard() {
   const statsQuery = useTaskStats()
@@ -93,6 +173,71 @@ export default function AdminDashboard() {
   )
 
   const recentStats = useMemo(() => getRecentStats(stats), [stats])
+  const runningTasks = useMemo(
+    () => stats.filter((item) => item.last_run_status === "running").length,
+    [stats]
+  )
+  const failedTasks = useMemo(
+    () => stats.filter((item) => item.last_run_status === "failed").length,
+    [stats]
+  )
+  const totalRuns = useMemo(
+    () =>
+      stats.reduce(
+        (sum, item) => sum + (typeof item.total_runs === "number" ? item.total_runs : 0),
+        0
+      ),
+    [stats]
+  )
+  const avgSuccessRate = useMemo(() => {
+    const rates = stats
+      .map((item) => normalizePercent(item.success_rate))
+      .filter((value): value is number => typeof value === "number")
+    if (rates.length === 0) {
+      return undefined
+    }
+    return rates.reduce((sum, value) => sum + value, 0) / rates.length
+  }, [stats])
+  const summaryCards = useMemo(
+    () => [
+      {
+        key: "running",
+        title: "运行中任务",
+        value: formatNumber(runningTasks),
+        subtitle: `共 ${formatNumber(stats.length)} 个任务`,
+        icon: Activity,
+        iconClassName: "text-emerald-400",
+      },
+      {
+        key: "runs",
+        title: "总执行次数",
+        value: formatNumber(totalRuns),
+        subtitle: "当前接口返回累计执行次数",
+        icon: Gauge,
+        iconClassName: "text-sky-400",
+      },
+      {
+        key: "success",
+        title: "成功率",
+        value: formatPercent(avgSuccessRate),
+        subtitle:
+          stats.length > 0
+            ? `基于 ${formatNumber(stats.length)} 个任务均值`
+            : "暂无任务数据",
+        icon: CheckCircle2,
+        iconClassName: "text-emerald-400",
+      },
+      {
+        key: "failed",
+        title: "失败任务",
+        value: formatNumber(failedTasks),
+        subtitle: "最近一次执行状态为失败",
+        icon: AlertTriangle,
+        iconClassName: "text-rose-400",
+      },
+    ],
+    [avgSuccessRate, failedTasks, runningTasks, stats.length, totalRuns]
+  )
 
   return (
     <div className="space-y-6">
@@ -108,24 +253,29 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      <section>
-        <SchedulerControl />
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {summaryCards.map((card) => (
+          <OverviewCard
+            key={card.key}
+            title={card.title}
+            value={card.value}
+            subtitle={card.subtitle}
+            icon={card.icon}
+            iconClassName={card.iconClassName}
+            loading={statsQuery.isLoading}
+          />
+        ))}
       </section>
 
       <section>
-        <TaskStats
-          stats={stats}
-          loading={statsQuery.isLoading}
-          error={statsQuery.isError}
-          onRetry={() => statsQuery.refetch()}
-        />
+        <SchedulerControl />
       </section>
 
       <Card className="border-border/60 bg-card/60 shadow-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm text-muted-foreground">
-              最近执行任务
+              最近活动
             </CardTitle>
             <Button asChild size="sm" variant="ghost" className="text-xs">
               <Link to="/admin/tasks">查看全部</Link>
@@ -146,67 +296,77 @@ export default function AdminDashboard() {
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>任务</TableHead>
-                  <TableHead className="w-[120px]">状态</TableHead>
-                  <TableHead className="w-[160px]">最近执行</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <div className="relative">
+              <div className="absolute bottom-2 left-[7px] top-2 border-l border-border/60" />
+              <div className="space-y-3">
                 {statsQuery.isLoading
-                  ? Array.from({ length: 4 }).map((_, index) => (
-                      <TableRow key={`recent-skeleton-${index}`}>
-                        <TableCell colSpan={3}>
-                          <Skeleton className="h-8 w-full" />
-                        </TableCell>
-                      </TableRow>
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={`recent-skeleton-${index}`}
+                        className="relative pl-6"
+                      >
+                        <span className="absolute left-[3px] top-3 h-2.5 w-2.5 rounded-full bg-border/80" />
+                        <Skeleton className="h-14 w-full" />
+                      </div>
                     ))
                   : recentStats.length > 0
-                    ? recentStats.map((item) => (
-                        <TableRow key={`recent-${item.task_id}`}>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="text-sm font-medium">
-                                {item.task_name}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {item.task_type}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "text-[10px]",
-                                getStatusTone(item.last_run_status)
-                              )}
-                            >
-                              {getStatusLabel(item.last_run_status)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {formatDateTime(item.last_run_time)}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    : (
-                        <TableRow>
-                          <TableCell
-                            colSpan={3}
-                            className="py-6 text-center text-sm text-muted-foreground"
+                    ? recentStats.map((item) => {
+                        const failed = item.last_run_status === "failed"
+                        return (
+                          <div
+                            key={`recent-${item.task_id}`}
+                            className={cn(
+                              "relative rounded-lg border border-l-2 bg-background/35 px-3 py-3 pl-6",
+                              failed
+                                ? "border-rose-400/40 border-l-rose-400"
+                                : "border-border/60 border-l-border/60"
+                            )}
                           >
-                            暂无执行记录
-                          </TableCell>
-                        </TableRow>
+                            <span
+                              className={cn(
+                                "absolute left-[3px] top-5 h-2.5 w-2.5 rounded-full",
+                                failed ? "bg-rose-400" : "bg-emerald-400"
+                              )}
+                            />
+                            <div className="flex flex-wrap items-center gap-2 text-sm">
+                              <span className="font-medium">{item.task_name}</span>
+                              <span className="text-muted-foreground">→</span>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-[10px]",
+                                  getStatusTone(item.last_run_status)
+                                )}
+                              >
+                                {getStatusLabel(item.last_run_status)}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                              <span>耗时 {formatDuration(item.avg_duration)}</span>
+                              <span>{formatDateTime(item.last_run_time)}</span>
+                            </div>
+                          </div>
+                        )
+                      })
+                    : (
+                        <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 py-6 text-center text-sm text-muted-foreground">
+                          暂无执行记录
+                        </div>
                       )}
-              </TableBody>
-            </Table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      <section>
+        <TaskStats
+          stats={stats}
+          loading={statsQuery.isLoading}
+          error={statsQuery.isError}
+          onRetry={() => statsQuery.refetch()}
+        />
+      </section>
     </div>
   )
 }

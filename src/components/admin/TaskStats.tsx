@@ -8,6 +8,21 @@ import { cn } from "@/lib/utils"
 import type { TaskStats } from "@/types"
 
 const placeholderItems = Array.from({ length: 6 })
+const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000
+
+type HealthState = "healthy" | "failed" | "stale"
+
+const toValidDate = (value?: string) => {
+  if (!value || typeof value !== "string") {
+    return null
+  }
+  const parsed = parseISO(value)
+  if (isValid(parsed)) {
+    return parsed
+  }
+  const fallback = new Date(value)
+  return isValid(fallback) ? fallback : null
+}
 
 const formatPercent = (value?: number) => {
   if (typeof value !== "number") {
@@ -30,18 +45,11 @@ const formatDuration = (value?: number) => {
 }
 
 const formatDateTime = (value?: string) => {
-  if (!value || typeof value !== "string") {
+  const date = toValidDate(value)
+  if (!date) {
     return "--"
   }
-  const parsed = parseISO(value)
-  if (isValid(parsed)) {
-    return format(parsed, "MM-dd HH:mm", { locale: zhCN })
-  }
-  const fallback = new Date(value)
-  if (isValid(fallback)) {
-    return format(fallback, "MM-dd HH:mm", { locale: zhCN })
-  }
-  return value
+  return format(date, "MM-dd HH:mm", { locale: zhCN })
 }
 
 const getStatusLabel = (status?: string) => {
@@ -75,6 +83,44 @@ const getStatusTone = (status?: string) => {
       return "border-slate-400/40 bg-slate-400/10 text-slate-400"
     default:
       return "border-border/60 bg-muted/20 text-muted-foreground"
+  }
+}
+
+const isLongTimeNoRun = (value?: string) => {
+  const date = toValidDate(value)
+  if (!date) {
+    return false
+  }
+  return Date.now() - date.getTime() > STALE_THRESHOLD_MS
+}
+
+const getHealthState = (stat: TaskStats): HealthState => {
+  if (stat.last_run_status === "failed") {
+    return "failed"
+  }
+  if (isLongTimeNoRun(stat.last_run_time)) {
+    return "stale"
+  }
+  return "healthy"
+}
+
+const getHealthTone = (state: HealthState) => {
+  switch (state) {
+    case "failed":
+      return {
+        cardClass: "border-rose-400/40",
+        dotClass: "bg-rose-400",
+      }
+    case "stale":
+      return {
+        cardClass: "border-amber-400/40",
+        dotClass: "bg-amber-400",
+      }
+    default:
+      return {
+        cardClass: "border-border/60",
+        dotClass: "bg-emerald-400",
+      }
   }
 }
 
@@ -134,45 +180,55 @@ export default function TaskStats({
                 </Card>
               ))
             : stats.length > 0
-              ? stats.map((stat) => (
-                  <Card
-                    key={`task-stat-${stat.task_id}`}
-                    className="border-border/60 bg-card/60"
-                  >
-                    <CardContent className="space-y-3 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-semibold">
-                            {stat.task_name}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {stat.task_type}
-                          </div>
-                        </div>
+              ? stats.map((stat) => {
+                  const healthState = getHealthState(stat)
+                  const healthTone = getHealthTone(healthState)
+                  return (
+                    <Card
+                      key={`task-stat-${stat.task_id}`}
+                      className={cn("bg-card/60", healthTone.cardClass)}
+                    >
+                      <CardContent className="relative space-y-3 p-4">
                         <span
                           className={cn(
-                            "rounded-full border px-2 py-1 text-xs font-semibold",
-                            getStatusTone(stat.last_run_status)
+                            "absolute right-4 top-4 h-2.5 w-2.5 rounded-full",
+                            healthTone.dotClass
                           )}
-                        >
-                          {getStatusLabel(stat.last_run_status)}
-                        </span>
-                      </div>
-                      <div className="text-2xl font-semibold text-foreground">
-                        {formatPercent(stat.success_rate)}
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                        <div>总运行: {stat.total_runs ?? "--"}</div>
-                        <div>
-                          成功/失败: {stat.success_runs ?? "--"}/
-                          {stat.failed_runs ?? "--"}
+                        />
+                        <div className="flex items-start justify-between gap-3 pr-5">
+                          <div>
+                            <div className="text-sm font-semibold">
+                              {stat.task_name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {stat.task_type}
+                            </div>
+                          </div>
+                          <span
+                            className={cn(
+                              "rounded-full border px-2 py-1 text-xs font-semibold",
+                              getStatusTone(stat.last_run_status)
+                            )}
+                          >
+                            {getStatusLabel(stat.last_run_status)}
+                          </span>
                         </div>
-                        <div>平均耗时: {formatDuration(stat.avg_duration)}</div>
-                        <div>最近执行: {formatDateTime(stat.last_run_time)}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                        <div className="text-2xl font-semibold text-foreground">
+                          {formatPercent(stat.success_rate)}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                          <div>总运行: {stat.total_runs ?? "--"}</div>
+                          <div>
+                            成功/失败: {stat.success_runs ?? "--"}/
+                            {stat.failed_runs ?? "--"}
+                          </div>
+                          <div>平均耗时: {formatDuration(stat.avg_duration)}</div>
+                          <div>最近执行: {formatDateTime(stat.last_run_time)}</div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })
               : (
                   <div className="col-span-full flex h-36 items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 text-sm text-muted-foreground">
                     暂无任务统计数据

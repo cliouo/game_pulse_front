@@ -222,6 +222,21 @@ export interface TaskParameters {
   [key: string]: unknown;
 }
 
+export interface TaskExecutionStep {
+  id: number;
+  execution_id: number;
+  step: string;
+  status: TaskStatus;
+  started_at?: number;
+  finished_at?: number;
+  duration?: number;
+  processed?: number;
+  succeeded?: number;
+  failed?: number;
+  output?: string;
+  error_message?: string;
+}
+
 export interface TaskExecution {
   id: number;
   task_id: number;
@@ -231,6 +246,11 @@ export interface TaskExecution {
   duration: number;
   error_message?: string;
   result?: Record<string, unknown>;
+  processed_count?: number;
+  success_count?: number;
+  failed_count?: number;
+  output?: string;
+  steps?: TaskExecutionStep[];
 }
 
 export interface Task {
@@ -239,6 +259,8 @@ export interface Task {
   description: string;
   type: TaskType;
   status: TaskStatus;
+  last_run_at?: number;
+  last_run_status?: TaskStatus;
   priority: TaskPriority;
   enabled: boolean;
   cron_expression: string;
