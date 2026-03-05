@@ -120,7 +120,7 @@ export default function Rankings() {
   const getSubtitle = () => {
     if (activeTab === "topselling") return formatRecordTime(topSellingRecords[0]?.record_time)
     if (activeTab === "wishlist") return formatTimestamp(mostWishlistedRecords[0]?.recorded_at)
-    if (activeTab === "players") return formatTimestamp(topPlayersRecords[0]?.collected_at)
+    if (activeTab === "players") return formatRecordTime(topPlayersRecords[0]?.collected_at)
     if (activeTab === "mostfollowed") return formatTimestamp(mostFollowedRecords[0]?.recorded_at)
     if (activeTab === "toprated") return formatTimestamp(topRatedRecords[0]?.recorded_at)
     if (activeTab === "mostplayed") return formatTimestamp(mostPlayedRecords[0]?.recorded_at)
