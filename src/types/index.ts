@@ -237,6 +237,16 @@ export interface TaskExecutionStep {
   error_message?: string;
 }
 
+export interface TaskExecutionLog {
+  id: number;
+  execution_id: number;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+  step?: string;
+  context?: string;
+  created_at: number;
+}
+
 export interface TaskExecution {
   id: number;
   task_id: number;
@@ -244,6 +254,8 @@ export interface TaskExecution {
   started_at: string;
   completed_at: string;
   duration: number;
+  trace_id?: string;
+  log_count?: number;
   error_message?: string;
   result?: Record<string, unknown>;
   processed_count?: number;

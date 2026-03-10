@@ -9,6 +9,8 @@ const adminKeys = {
   executionsRoot: (id: number) => ['admin-task-executions', id] as const,
   executions: (id: number, page: number, pageSize: number) =>
     ['admin-task-executions', id, page, pageSize] as const,
+  executionLogs: (taskId: number, execId: number, params?: object) =>
+    ['admin-task-execution-logs', taskId, execId, params] as const,
   stats: ['admin-task-stats'] as const,
   types: ['admin-task-types'] as const,
   typeSchema: (type: string) => ['admin-task-type-schema', type] as const,
@@ -113,6 +115,30 @@ export function useTaskExecutions(
     queryKey: adminKeys.executions(id, page, pageSize),
     queryFn: () => adminApi.getTaskExecutions(id, page, pageSize),
     enabled: enabled && Number.isFinite(id) && id > 0,
+  });
+}
+
+export function useExecutionLogs(
+  taskId: number,
+  executionId: number,
+  params?: {
+    level?: string;
+    step?: string;
+    search?: string;
+    page?: number;
+    page_size?: number;
+  },
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: adminKeys.executionLogs(taskId, executionId, params),
+    queryFn: () => adminApi.getExecutionLogs(taskId, executionId, params),
+    enabled:
+      (options?.enabled ?? true) &&
+      Number.isFinite(taskId) &&
+      taskId > 0 &&
+      Number.isFinite(executionId) &&
+      executionId > 0,
   });
 }
 

@@ -6,6 +6,7 @@ import type {
   SchedulerStatus,
   Task,
   TaskExecution,
+  TaskExecutionLog,
   TaskStats,
   TaskTypeOption,
 } from '@/types';
@@ -54,6 +55,24 @@ const adminApi = {
       {
         params: { page, page_size: pageSize },
       }
+    );
+    return response.data;
+  },
+
+  async getExecutionLogs(
+    taskId: number,
+    executionId: number,
+    params?: {
+      level?: string;
+      step?: string;
+      search?: string;
+      page?: number;
+      page_size?: number;
+    }
+  ) {
+    const response = await apiClient.get<PaginatedResponse<TaskExecutionLog>>(
+      `/admin/tasks/${taskId}/executions/${executionId}/logs`,
+      { params }
     );
     return response.data;
   },

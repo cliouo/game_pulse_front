@@ -12,6 +12,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom"
 
 import Pagination from "@/components/common/Pagination"
+import ExecutionLogPanel from "@/components/admin/ExecutionLogPanel"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -413,6 +414,14 @@ export default function TaskDetailPage() {
           </div>
         ) : null}
 
+        {execution.log_count && execution.log_count > 0 ? (
+          <ExecutionLogPanel
+            taskId={taskId}
+            executionId={execution.id}
+            traceId={execution.trace_id}
+          />
+        ) : null}
+
         {hasOutput ? (
           <div className="space-y-1">
             <button
@@ -747,11 +756,11 @@ export default function TaskDetailPage() {
           <CardTitle className="text-base">执行历史</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <Table className="min-w-[860px]">
+          <Table className="min-w-[940px]">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[90px]">ID</TableHead>
-                <TableHead className="w-[120px]">状态</TableHead>
+                <TableHead className="w-[130px]">ID</TableHead>
+                <TableHead className="w-[180px]">状态</TableHead>
                 <TableHead className="w-[120px]">耗时</TableHead>
                 <TableHead>处理数/成功/失败</TableHead>
                 <TableHead className="w-[170px]">开始时间</TableHead>
@@ -786,18 +795,35 @@ export default function TaskDetailPage() {
                           <Fragment key={`execution-${execution.id}`}>
                             <TableRow className={cn(isExpanded && "bg-muted/20")}>
                               <TableCell className="text-xs text-muted-foreground">
-                                #{execution.id}
+                                <div className="space-y-1">
+                                  <div>#{execution.id}</div>
+                                  {execution.trace_id ? (
+                                    <div className="font-mono text-[10px] text-muted-foreground">
+                                      trace:{execution.trace_id.slice(-8)}
+                                    </div>
+                                  ) : null}
+                                </div>
                               </TableCell>
                               <TableCell>
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    "text-[10px]",
-                                    statusToneMap[execution.status]
-                                  )}
-                                >
-                                  {statusLabels[execution.status]}
-                                </Badge>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      "text-[10px]",
+                                      statusToneMap[execution.status]
+                                    )}
+                                  >
+                                    {statusLabels[execution.status]}
+                                  </Badge>
+                                  {execution.log_count && execution.log_count > 0 ? (
+                                    <Badge
+                                      variant="outline"
+                                      className="border-sky-400/40 bg-sky-400/10 text-[10px] text-sky-400"
+                                    >
+                                      日志 {execution.log_count}
+                                    </Badge>
+                                  ) : null}
+                                </div>
                               </TableCell>
                               <TableCell className="text-xs text-muted-foreground">
                                 {formatDuration(execution)}
