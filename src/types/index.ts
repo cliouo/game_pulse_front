@@ -94,7 +94,7 @@ export interface TopGameInfo {
   review_negative: number;
   wishlist_rank: number;
   selling_rank: number;
-  collected_at: string;
+  collected_at: number;
 }
 
 export interface GameWithStats {
