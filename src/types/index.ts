@@ -218,6 +218,30 @@ export type TaskStatus =
   | 'cancelled';
 export type TaskPriority = 'low' | 'normal' | 'high' | 'urgent';
 
+// Crawl Scope types
+export interface SystemSetting {
+  key: string;
+  value: string;
+  category: string;
+  label: string;
+  updated_at: string;
+}
+
+export interface CrawlScopeConfig {
+  whitelist_enabled: boolean;
+  whitelist_app_ids: number[];
+  ranking_max_entries: number;
+  steam_ranking_max_count: number;
+  per_game_limit: number;
+  disabled_task_types: string[];
+}
+
+export interface WhitelistGame {
+  app_id: number;
+  name: string;
+  header_image?: string;
+}
+
 export interface TaskParameters {
   [key: string]: unknown;
 }

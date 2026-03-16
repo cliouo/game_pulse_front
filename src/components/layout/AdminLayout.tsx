@@ -50,6 +50,14 @@ export default function AdminLayout() {
             >
               任务管理
             </NavLink>
+            <NavLink
+              to="/admin/crawl-scope"
+              className={({ isActive }) =>
+                cn(navItemBase, isActive ? navItemActive : navItemIdle)
+              }
+            >
+              采集范围
+            </NavLink>
           </nav>
         </aside>
 

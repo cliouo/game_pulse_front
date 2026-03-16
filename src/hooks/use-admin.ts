@@ -16,6 +16,9 @@ const adminKeys = {
   typeSchema: (type: string) => ['admin-task-type-schema', type] as const,
   scheduler: ['admin-scheduler-status'] as const,
   schedulerConfig: ['admin-scheduler-config'] as const,
+  crawlScope: ['admin-crawl-scope'] as const,
+  whitelistGames: (page?: number) => ['admin-whitelist-games', page] as const,
+  whitelistGamesRoot: ['admin-whitelist-games'] as const,
 };
 
 export function useAdminTasks(params: AdminTasksQueryParams) {
@@ -247,6 +250,63 @@ export function useRestartScheduler() {
     mutationFn: adminApi.restartScheduler,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.scheduler });
+    },
+  });
+}
+
+export function useCrawlScope() {
+  return useQuery({
+    queryKey: adminKeys.crawlScope,
+    queryFn: adminApi.getCrawlScope,
+  });
+}
+
+export function useUpdateCrawlScope() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (settings: Record<string, string>) => adminApi.updateCrawlScope(settings),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.crawlScope });
+    },
+  });
+}
+
+export function useWhitelistGames(page = 1) {
+  return useQuery({
+    queryKey: adminKeys.whitelistGames(page),
+    queryFn: () => adminApi.getWhitelistGames({ page, page_size: 50 }),
+  });
+}
+
+export function useAddWhitelistGame() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (appId: number) => adminApi.addWhitelistGame(appId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.whitelistGamesRoot });
+      queryClient.invalidateQueries({ queryKey: adminKeys.crawlScope });
+    },
+  });
+}
+
+export function useRemoveWhitelistGame() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (appId: number) => adminApi.removeWhitelistGame(appId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.whitelistGamesRoot });
+      queryClient.invalidateQueries({ queryKey: adminKeys.crawlScope });
+    },
+  });
+}
+
+export function useImportWhitelistFromConfig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => adminApi.importWhitelistFromConfig(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.whitelistGamesRoot });
+      queryClient.invalidateQueries({ queryKey: adminKeys.crawlScope });
     },
   });
 }

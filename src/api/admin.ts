@@ -4,11 +4,13 @@ import type {
   ApiResponse,
   PaginatedResponse,
   SchedulerStatus,
+  SystemSetting,
   Task,
   TaskExecution,
   TaskExecutionLog,
   TaskStats,
   TaskTypeOption,
+  WhitelistGame,
 } from '@/types';
 
 const adminApi = {
@@ -154,6 +156,49 @@ const adminApi = {
 
   async restartScheduler() {
     const response = await apiClient.post<ApiResponse<void>>('/admin/scheduler/restart');
+    return response.data;
+  },
+
+  // Crawl Scope
+  async getCrawlScope() {
+    const response = await apiClient.get<ApiResponse<SystemSetting[]>>('/admin/crawl-scope');
+    return response.data;
+  },
+
+  async updateCrawlScope(settings: Record<string, string>) {
+    const response = await apiClient.put<ApiResponse<SystemSetting[]>>('/admin/crawl-scope', {
+      settings,
+    });
+    return response.data;
+  },
+
+  async getWhitelistGames(params?: { page?: number; page_size?: number }) {
+    const response = await apiClient.get<PaginatedResponse<WhitelistGame>>(
+      '/admin/crawl-scope/whitelist/games',
+      { params }
+    );
+    return response.data;
+  },
+
+  async addWhitelistGame(appId: number) {
+    const response = await apiClient.post<ApiResponse<{ message: string; app_id: number }>>(
+      '/admin/crawl-scope/whitelist/games',
+      { app_id: appId }
+    );
+    return response.data;
+  },
+
+  async removeWhitelistGame(appId: number) {
+    const response = await apiClient.delete<ApiResponse<{ message: string; app_id: number }>>(
+      `/admin/crawl-scope/whitelist/games/${appId}`
+    );
+    return response.data;
+  },
+
+  async importWhitelistFromConfig() {
+    const response = await apiClient.post<
+      ApiResponse<{ message: string; imported: number; total: number }>
+    >('/admin/crawl-scope/whitelist/import-config');
     return response.data;
   },
 };
