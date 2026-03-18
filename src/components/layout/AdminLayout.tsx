@@ -58,6 +58,14 @@ export default function AdminLayout() {
             >
               采集范围
             </NavLink>
+            <NavLink
+              to="/admin/crawl-logs"
+              className={({ isActive }) =>
+                cn(navItemBase, isActive ? navItemActive : navItemIdle)
+              }
+            >
+              执行日志
+            </NavLink>
           </nav>
         </aside>
 

@@ -12,6 +12,7 @@ import SteamDB from "@/pages/SteamDB"
 import Deals from "@/pages/Deals"
 import Charts from "@/pages/Charts"
 import AdminDashboard from "@/pages/admin/AdminDashboard"
+import CrawlLogsPage from "@/pages/admin/CrawlLogsPage"
 import CrawlScopePage from "@/pages/admin/CrawlScopePage"
 import TaskDetailPage from "@/pages/admin/TaskDetailPage"
 import TasksPage from "@/pages/admin/TasksPage"
@@ -40,6 +41,7 @@ export const routes: RouteObject[] = [
       { path: "tasks", element: <TasksPage /> },
       { path: "tasks/:id", element: <TaskDetailPage /> },
       { path: "crawl-scope", element: <CrawlScopePage /> },
+      { path: "crawl-logs", element: <CrawlLogsPage /> },
     ],
   },
 ]

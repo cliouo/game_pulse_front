@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import adminApi from '@/api/admin';
-import type { AdminTasksQueryParams, Task } from '@/types';
+import type { AdminTasksQueryParams, CrawlLogsQueryParams, Task } from '@/types';
 
 const adminKeys = {
   tasks: (params?: AdminTasksQueryParams) => ['admin-tasks', params] as const,
@@ -19,6 +19,9 @@ const adminKeys = {
   crawlScope: ['admin-crawl-scope'] as const,
   whitelistGames: (page?: number) => ['admin-whitelist-games', page] as const,
   whitelistGamesRoot: ['admin-whitelist-games'] as const,
+  crawlLogs: (params?: CrawlLogsQueryParams) => ['admin-crawl-logs', params] as const,
+  crawlLogsRoot: ['admin-crawl-logs'] as const,
+  crawlLog: (id: number) => ['admin-crawl-log', id] as const,
 };
 
 export function useAdminTasks(params: AdminTasksQueryParams) {
@@ -258,6 +261,21 @@ export function useCrawlScope() {
   return useQuery({
     queryKey: adminKeys.crawlScope,
     queryFn: adminApi.getCrawlScope,
+  });
+}
+
+export function useCrawlLogs(params: CrawlLogsQueryParams) {
+  return useQuery({
+    queryKey: adminKeys.crawlLogs(params),
+    queryFn: () => adminApi.getCrawlLogs(params),
+  });
+}
+
+export function useCrawlLog(id: number) {
+  return useQuery({
+    queryKey: adminKeys.crawlLog(id),
+    queryFn: () => adminApi.getCrawlLog(id),
+    enabled: Number.isFinite(id) && id > 0,
   });
 }
 

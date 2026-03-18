@@ -562,3 +562,39 @@ export interface StatsDetail {
   collected_at: number;
   collection_period: string;
 }
+
+// 爬虫执行日志
+export interface CrawlLogEntry {
+  elapsed_seconds: number;
+  level: string;
+  message: string;
+}
+
+export interface CrawlExecutionDetail {
+  id: number;
+  execution_id: number;
+  trace_id: string;
+  endpoint: string;
+  app_id: number;
+  session_id: string;
+  proxy_used: string;
+  attempt_count: number;
+  total_elapsed_s: number;
+  success: boolean;
+  status_code: number;
+  exception_type: string;
+  exception_msg: string;
+  cf_challenge: boolean;
+  cf_solve_time_s: number;
+  logs: string;
+  created_at: string;
+}
+
+export interface CrawlLogsQueryParams {
+  execution_id?: number;
+  app_id?: number;
+  success?: string;
+  endpoint?: string;
+  page?: number;
+  page_size?: number;
+}

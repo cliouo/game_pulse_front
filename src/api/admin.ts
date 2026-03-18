@@ -2,6 +2,8 @@ import apiClient from './client';
 import type {
   AdminTasksQueryParams,
   ApiResponse,
+  CrawlExecutionDetail,
+  CrawlLogsQueryParams,
   PaginatedResponse,
   SchedulerStatus,
   SystemSetting,
@@ -199,6 +201,22 @@ const adminApi = {
     const response = await apiClient.post<
       ApiResponse<{ message: string; imported: number; total: number }>
     >('/admin/crawl-scope/whitelist/import-config');
+    return response.data;
+  },
+
+  // Crawl Logs
+  async getCrawlLogs(params: CrawlLogsQueryParams) {
+    const response = await apiClient.get<PaginatedResponse<CrawlExecutionDetail>>(
+      '/admin/crawl-logs',
+      { params },
+    );
+    return response.data;
+  },
+
+  async getCrawlLog(id: number) {
+    const response = await apiClient.get<ApiResponse<CrawlExecutionDetail>>(
+      `/admin/crawl-logs/${id}`,
+    );
     return response.data;
   },
 };
