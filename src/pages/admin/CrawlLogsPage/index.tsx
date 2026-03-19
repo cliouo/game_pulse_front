@@ -300,7 +300,7 @@ export default function CrawlLogsPage() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">代理：</span>
-                  <span className="font-mono text-xs">{selected.proxy_used || "direct"}</span>
+                  <span className="font-mono text-xs">{selected.proxy_used || (selected.session_id ? "direct" : "未知")}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">会话：</span>
