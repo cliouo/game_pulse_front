@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { format } from "date-fns"
 
+import { API_BASE_URL } from "@/api/config"
 import Pagination from "@/components/common/Pagination"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -65,8 +66,7 @@ function parseLogs(raw: string): CrawlLogEntry[] {
 }
 
 function screenshotUrl(id: number) {
-  const base = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"
-  return `${base}/admin/crawl-logs/${id}/screenshot`
+  return `${API_BASE_URL}/admin/crawl-logs/${id}/screenshot`
 }
 
 export default function CrawlLogsPage() {

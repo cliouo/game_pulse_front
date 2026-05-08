@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react"
+import axios from "axios"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { CheckedState } from "@radix-ui/react-checkbox"
 
 import gamesApi from "@/api/games"
@@ -46,6 +47,10 @@ function toBoolean(checked: CheckedState) {
   return checked === true
 }
 
+function isCanceledRequest(error: unknown) {
+  return axios.isCancel(error) || (error instanceof Error && error.name === "CanceledError")
+}
+
 export default function CrawlScopePage() {
   const { data: scopeData, isLoading } = useCrawlScope()
   const updateScope = useUpdateCrawlScope()
@@ -68,6 +73,14 @@ export default function CrawlScopePage() {
   const [searchResults, setSearchResults] = useState<GameWithStats[]>([])
   const [searching, setSearching] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const searchControllerRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    return () => {
+      searchControllerRef.current?.abort()
+      searchControllerRef.current = null
+    }
+  }, [])
 
   useEffect(() => {
     if (!scopeData?.data) {
@@ -116,19 +129,36 @@ export default function CrawlScopePage() {
 
   const handleSearch = async () => {
     const keyword = searchQuery.trim()
+
+    searchControllerRef.current?.abort()
+    searchControllerRef.current = null
+
     if (!keyword) {
       setSearchResults([])
+      setSearching(false)
       return
     }
 
+    const controller = new AbortController()
+    searchControllerRef.current = controller
     setSearching(true)
     try {
-      const response = await gamesApi.searchGames(keyword)
-      setSearchResults(response.data ?? [])
-    } catch {
-      setSearchResults([])
+      const response = await gamesApi.searchGames(keyword, controller.signal)
+      if (searchControllerRef.current === controller) {
+        setSearchResults(response.data ?? [])
+      }
+    } catch (error) {
+      if (isCanceledRequest(error)) {
+        return
+      }
+      if (searchControllerRef.current === controller) {
+        setSearchResults([])
+      }
     } finally {
-      setSearching(false)
+      if (searchControllerRef.current === controller) {
+        searchControllerRef.current = null
+        setSearching(false)
+      }
     }
   }
 

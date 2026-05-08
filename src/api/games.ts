@@ -16,9 +16,10 @@ const gamesApi = {
     return response.data;
   },
 
-  async searchGames(keyword: string) {
+  async searchGames(keyword: string, signal?: AbortSignal) {
     const response = await apiClient.get<ApiResponse<GameWithStats[]>>('/games/search', {
       params: { keyword },
+      signal,
     });
     return response.data;
   },
