@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { validateSchema } from "@/components/schema-form"
 import { Button } from "@/components/ui/button"
@@ -77,6 +77,7 @@ export default function TaskCreateDialog({
 }: TaskCreateDialogProps) {
   const createTemplateMutation = useCreateTaskTemplate()
   const form = useTaskForm({ mode: "create", open })
+  const [rootError, setRootError] = useState<string | null>(null)
 
   const taskType = form.watch("type")
   const selectedTypeOption = useMemo(
@@ -87,13 +88,11 @@ export default function TaskCreateDialog({
   const isTemplateLoading = createTemplateMutation.isPending
   const isWorking = saving || validating || isTemplateLoading
   const parameterError = form.formState.errors.parameters?.message as string | undefined
-  const rootError = (form.formState.errors as any).root?.message as string | undefined
   const validationErrors =
     typeof parameterError === "string" && parameterError.length > 0
       ? parameterError.split("\n")
       : []
-  const templateError =
-    typeof rootError === "string" && rootError.length > 0 ? rootError : null
+  const templateError = rootError && rootError.length > 0 ? rootError : null
 
   useEffect(() => {
     if (!open) {
@@ -160,7 +159,7 @@ export default function TaskCreateDialog({
       return
     }
 
-    form.clearErrors("root" as any)
+    setRootError(null)
     try {
       const response = await createTemplateMutation.mutateAsync({
         type: currentType,
@@ -175,17 +174,16 @@ export default function TaskCreateDialog({
         parameters: templateData.parameters ?? baseValues.parameters,
       })
       form.clearErrors()
+      setRootError(null)
     } catch {
-      form.setError("root" as any, {
-        type: "template",
-        message: "模板加载失败，请稍后重试",
-      })
+      setRootError("模板加载失败，请稍后重试")
     }
   }
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       form.clearErrors()
+      setRootError(null)
     }
     onOpenChange(nextOpen)
   }
@@ -193,6 +191,7 @@ export default function TaskCreateDialog({
   const handleTypeChange = () => {
     form.setValue("parameters", {})
     form.clearErrors("parameters")
+    setRootError(null)
   }
 
   // 不渲染时直接返回 null，彻底避免 Portal 卸载冲突

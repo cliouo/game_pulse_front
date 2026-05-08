@@ -32,11 +32,14 @@ export function AnimatedList({
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <AnimatePresence mode="popLayout">
-        {itemsToShow.map((item) => (
-          <AnimatedListItem key={(item as any).key}>
-            {item}
-          </AnimatedListItem>
-        ))}
+        {itemsToShow.map((item, itemIndex) => {
+          const itemKey =
+            React.isValidElement(item) && item.key != null
+              ? item.key
+              : `item-${itemIndex}`;
+
+          return <AnimatedListItem key={itemKey}>{item}</AnimatedListItem>;
+        })}
       </AnimatePresence>
     </div>
   );
