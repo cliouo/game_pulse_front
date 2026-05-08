@@ -56,6 +56,7 @@ import { useSteamSpyByAppId } from "@/hooks/use-steamspy"
 import { cn } from "@/lib/utils"
 
 const numberFormatter = new Intl.NumberFormat("zh-CN")
+const HISTORY_ANCHOR_TIME = Date.now()
 
 const formatNumber = (value?: number | null) =>
   typeof value === "number" ? numberFormatter.format(value) : "--"
@@ -266,7 +267,7 @@ export default function GameDetail() {
   const historyParams = useMemo(() => {
     const base: { page: number; page_size: number; start_time?: string } = { page: 1, page_size: 2000 }
     if (trendDays > 0) {
-      base.start_time = new Date(Date.now() - trendDays * 86400000).toISOString()
+      base.start_time = new Date(HISTORY_ANCHOR_TIME - trendDays * 86400000).toISOString()
     }
     return base
   }, [trendDays])
@@ -299,11 +300,17 @@ export default function GameDetail() {
   const newsItems = newsQuery.data?.data ?? []
   const reviewItems = reviewsQuery.data?.data ?? []
   const dealItems = dealsQuery.data?.data ?? []
+  const igdbGenresJson = igdbData?.genres_json
+  const igdbThemesJson = igdbData?.themes_json
+  const platformsJson = game?.platforms
+  const screenshotsJson = game?.screenshots_json
+  const supportedLanguagesText = game?.supported_languages
+  const aboutTheGameHtml = game?.about_the_game
 
   const igdbGenres = useMemo(() => {
-    if (!igdbData?.genres_json) return []
+    if (!igdbGenresJson) return []
     try {
-      const parsed = JSON.parse(igdbData.genres_json) as unknown
+      const parsed = JSON.parse(igdbGenresJson) as unknown
       if (!Array.isArray(parsed)) return []
       return parsed.filter(
         (g): g is { name: string } =>
@@ -312,12 +319,12 @@ export default function GameDetail() {
     } catch {
       return []
     }
-  }, [igdbData?.genres_json])
+  }, [igdbGenresJson])
 
   const igdbThemes = useMemo(() => {
-    if (!igdbData?.themes_json) return []
+    if (!igdbThemesJson) return []
     try {
-      const parsed = JSON.parse(igdbData.themes_json) as unknown
+      const parsed = JSON.parse(igdbThemesJson) as unknown
       if (!Array.isArray(parsed)) return []
       return parsed.filter(
         (t): t is { name: string } =>
@@ -326,14 +333,14 @@ export default function GameDetail() {
     } catch {
       return []
     }
-  }, [igdbData?.themes_json])
+  }, [igdbThemesJson])
 
   const platforms = useMemo<PlatformPayload | null>(() => {
-    if (!game?.platforms) {
+    if (!platformsJson) {
       return null
     }
     try {
-      const parsed = JSON.parse(game.platforms) as PlatformPayload
+      const parsed = JSON.parse(platformsJson) as PlatformPayload
       return {
         windows: Boolean(parsed.windows),
         mac: Boolean(parsed.mac),
@@ -342,14 +349,14 @@ export default function GameDetail() {
     } catch {
       return null
     }
-  }, [game?.platforms])
+  }, [platformsJson])
 
   const screenshots = useMemo<ScreenshotPayload[]>(() => {
-    if (!game?.screenshots_json) {
+    if (!screenshotsJson) {
       return []
     }
     try {
-      const parsed = JSON.parse(game.screenshots_json) as unknown
+      const parsed = JSON.parse(screenshotsJson) as unknown
       if (!Array.isArray(parsed)) {
         return []
       }
@@ -377,24 +384,24 @@ export default function GameDetail() {
     } catch {
       return []
     }
-  }, [game?.screenshots_json])
+  }, [screenshotsJson])
 
   const supportedLanguages = useMemo(() => {
-    if (!game?.supported_languages) {
+    if (!supportedLanguagesText) {
       return []
     }
-    return game.supported_languages
+    return supportedLanguagesText
       .split(/[,\n|，]/)
       .map((item) => item.trim())
       .filter((item) => item.length > 0)
-  }, [game?.supported_languages])
+  }, [supportedLanguagesText])
 
   const aboutText = useMemo(() => {
-    if (!game?.about_the_game) {
+    if (!aboutTheGameHtml) {
       return ""
     }
-    return stripHTML(game.about_the_game)
-  }, [game?.about_the_game])
+    return stripHTML(aboutTheGameHtml)
+  }, [aboutTheGameHtml])
 
   const steamStoreUrl = appId
     ? `https://store.steampowered.com/app/${appId}`
@@ -402,6 +409,7 @@ export default function GameDetail() {
 
   const playerChartData: ChartDatum[] = [...playerHistoryData]
     .sort((left, right) => left.recorded_at - right.recorded_at)
+    .filter((point) => Number.isFinite(point.player_count))
     .map((point) => ({
       date: point.recorded_at,
       value: point.player_count,
@@ -409,6 +417,7 @@ export default function GameDetail() {
 
   const priceChartData = [...priceHistoryData]
     .sort((left, right) => left.recorded_at - right.recorded_at)
+    .filter((point) => Number.isFinite(point.price))
     .map((point) => ({
       date: point.recorded_at,
       value: point.price,
@@ -418,6 +427,7 @@ export default function GameDetail() {
 
   const followerChartData: ChartDatum[] = [...followerHistoryData]
     .sort((left, right) => left.recorded_at - right.recorded_at)
+    .filter((point) => Number.isFinite(point.follower_count))
     .map((point) => ({
       date: point.recorded_at,
       value: point.follower_count,
