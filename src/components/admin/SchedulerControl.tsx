@@ -130,7 +130,7 @@ export default function SchedulerControl() {
     return values.sort((a, b) =>
       a.name.localeCompare(b.name)
     )
-  }, [status?.tasks])
+  }, [status])
   const configEntries = useMemo(() => {
     if (!schedulerConfig || typeof schedulerConfig !== "object") {
       return []

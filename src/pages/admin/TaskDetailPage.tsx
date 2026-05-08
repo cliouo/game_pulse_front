@@ -193,10 +193,13 @@ export default function TaskDetailPage() {
   >({})
 
   useEffect(() => {
-    setPage(1)
-    setExpandedExecutionIds({})
-    setExpandedExecutionOutputs({})
-    setEditingTask(null)
+    const timer = window.setTimeout(() => {
+      setPage(1)
+      setExpandedExecutionIds({})
+      setExpandedExecutionOutputs({})
+      setEditingTask(null)
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [taskId])
 
   const taskQuery = useAdminTask(taskId)
@@ -225,6 +228,8 @@ export default function TaskDetailPage() {
     [task?.id, taskStats]
   )
 
+  const currentTaskType = task?.type
+
   const typeOptions = useMemo<TaskTypeOption[]>(() => {
     const apiData = taskTypesQuery.data?.data
     const apiTypes = Array.isArray(apiData) ? apiData : []
@@ -235,11 +240,11 @@ export default function TaskDetailPage() {
     }))
     const apiTypeValues = new Set(normalizedTypes.map((t) => t.value))
     const extraType =
-      task?.type && !apiTypeValues.has(task.type)
+      currentTaskType && !apiTypeValues.has(currentTaskType)
         ? [
             {
-              value: task.type,
-              label: task.type,
+              value: currentTaskType,
+              label: currentTaskType,
               description: "",
               schema: emptySchema,
               ui_schema: emptyUiSchema,
@@ -247,7 +252,7 @@ export default function TaskDetailPage() {
           ]
         : []
     return [...normalizedTypes, ...extraType]
-  }, [taskTypesQuery.data?.data, task?.type])
+  }, [taskTypesQuery.data?.data, currentTaskType])
 
   const executions = useMemo(() => {
     const d = executionsQuery.data?.data

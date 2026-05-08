@@ -55,11 +55,9 @@ export default function OpportunityScore({
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    if (typeof rounded === "number") {
-      const frame = requestAnimationFrame(() => setProgress(rounded))
-      return () => cancelAnimationFrame(frame)
-    }
-    setProgress(0)
+    const nextProgress = typeof rounded === "number" ? rounded : 0
+    const frame = requestAnimationFrame(() => setProgress(nextProgress))
+    return () => cancelAnimationFrame(frame)
   }, [rounded])
 
   const radius = (size - strokeWidth) / 2

@@ -185,7 +185,10 @@ export default function TaskTable({
 
   useEffect(() => {
     if (typeof defaultExpandedTaskId === "number") {
-      setExpandedTaskId(defaultExpandedTaskId)
+      const timer = window.setTimeout(() => {
+        setExpandedTaskId(defaultExpandedTaskId)
+      }, 0)
+      return () => window.clearTimeout(timer)
     }
   }, [defaultExpandedTaskId])
 
